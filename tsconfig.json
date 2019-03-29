@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": { "*": ["types/*"] },
+    "outDir": ".build",
+    "allowJs": true,
+    "target": "es5",
+    "resolveJsonModule": true,
+    "downlevelIteration": true
+  },
+  "include": ["./**/*"],
+  "types": ["node"]
+}
