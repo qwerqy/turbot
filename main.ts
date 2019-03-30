@@ -6,8 +6,8 @@ import {
 import Cleverbot = require("cleverbot.io");
 import Discord = require("discord.js");
 require("dotenv").config();
-const isDevMode = process.env.NODE_ENV !== "production";
-const botId = isDevMode ? 546301684192641024 : 546239335238860827;
+const isDevMode: boolean = process.env.NODE_ENV !== "production";
+const botId: number = isDevMode ? 546301684192641024 : 546239335238860827;
 
 declare module "discord.js" {
   interface Client {
@@ -16,8 +16,8 @@ declare module "discord.js" {
 }
 
 // creates Client instance
-const client = new Discord.Client();
-const cleverClient = new Cleverbot(
+const client: any = new Discord.Client();
+const cleverClient: any = new Cleverbot(
   process.env.CLEVERBOT_USER,
   process.env.CLEVERBOT_KEY
 );
@@ -30,6 +30,7 @@ client.on("ready", () => {
   Bot is in ${process.env.NODE_ENV} mode.
   Logged in as ${client.user.tag}!
   `);
+  cleverClient.setNick(`${client.user.tag}`);
   client.user.setActivity(
     isDevMode
       ? `>[DEV MODE] | ${[...client.guilds].length} servers`
@@ -54,26 +55,34 @@ client.music.start(client, {
 });
 
 client.on("message", async msg => {
+  // Disable communications with other bots.
   if (msg.author.bot) return;
+  // Disable access to DevMode bot in other servers.
   if (
     isDevMode &&
     msg.guild.id !== "541382645670608906" &&
     msg.author.id !== "533610248142061579"
   )
     return;
-  cleverClient.setNick(`${msg.guild.id}`);
-
   if (
     msg.content.toLowerCase().includes("cheese") ||
     msg.content.toLowerCase().includes("<@546239335238860827>")
   ) {
-    const _msg = msg.content.replace("cheese", "").replace(`<@${botId}>`, "");
-    console.log(_msg);
+    const _msg: string = msg.content
+      .replace("cheese", "")
+      .replace(`<@${botId}>`, "");
     msg.channel.startTyping();
     cleverClient.create(function(err, session) {
-      if (err) throw new Error(err);
+      if (err) {
+        console.log(err);
+        msg.channel.stopTyping();
+      }
       cleverClient.ask(_msg, function(err, response) {
-        if (err) throw new Error(err);
+        if (err) {
+          console.log(err);
+          msg.channel.stopTyping();
+        }
+        console.log(session);
         if (response) {
           msg.channel.stopTyping();
           msg.reply(response);
@@ -82,22 +91,21 @@ client.on("message", async msg => {
     });
   }
 
-  const symbol = process.env.NODE_ENV !== "production" ? "<" : ">";
+  const symbol: string = process.env.NODE_ENV !== "production" ? "<" : ">";
 
   // Sets commands that start with '>'
   if (msg.content.substring(0, 1) === symbol) {
-    const musicBot = client.music.bot;
-    const args = msg.content.substring(1).split(" ");
-    const cmd = args[0];
-    const suffix = args.splice(1).join(" ");
-    const user = msg.author.username;
+    const musicBot: any = client.music.bot;
+    const args: Array<string> = msg.content.substring(1).split(" ");
+    const cmd: string = args[0];
+    const suffix: string = args.splice(1).join(" ");
+    const user: string = msg.author.username;
 
     switch (cmd) {
       case "status":
         msg.channel.send(createStatusEmbed(client));
         break;
       case "help":
-        console.log(`${user} help`);
         msg.channel.send(createHelpEmbed());
         break;
       case "meme": {
@@ -112,37 +120,29 @@ client.on("message", async msg => {
       case "queue":
       case "q":
         musicBot.queueFunction(msg, suffix);
-        console.log(`${user} queue: `, suffix);
         break;
       case "np":
         musicBot.npFunction(msg, suffix);
-        console.log(`${user} now playing: `, suffix);
         break;
       case "loop":
       case "repeat":
         musicBot.loopFunction(msg, suffix);
-        console.log(`${user} loop/repeat: `, suffix);
         break;
       case "skip":
         musicBot.skipFunction(msg, suffix);
-        console.log(`${user} skip: `, suffix);
         break;
       case "pause":
         musicBot.pauseFunction(msg, suffix);
-        console.log(`${user} pause: `, suffix);
         break;
       case "resume":
         musicBot.resumeFunction(msg, suffix);
-        console.log(`${user} resume: `, suffix);
         break;
       case "clear":
         musicBot.clearFunction(msg, suffix);
-        console.log(`${user} clear: `, suffix);
         break;
       case "leave":
       case "bye":
         musicBot.leaveFunction(msg, suffix);
-        console.log(`${user} leave: `, suffix);
         break;
       case "p":
       case "play":
@@ -152,20 +152,15 @@ client.on("message", async msg => {
           } else {
             musicBot.searchFunction(msg, suffix);
           }
-          console.log(`${user} search/play: `, suffix);
-        } catch (err) {
-          console.log(`${user} search/play err: `, err);
-        }
+        } catch (err) {}
         break;
       case "v":
       case "volume":
         musicBot.volumeFunction(msg, suffix);
-        console.log(`${user} volume: `, suffix);
         break;
       case "rm":
       case "remove":
         musicBot.removeFunction(msg, suffix);
-        console.log(`${user} remove: `, suffix);
         break;
     }
   }

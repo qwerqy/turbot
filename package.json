@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "private": true,
   "scripts": {
     "bot": "tsc && NODE_ENV=production node .build/main.js",
     "bot:dev": "NODE_ENV=local ts-node-dev --respawn --transpileOnly main.ts"
   },
   "keywords": [],
-  "author": "",
+  "author": "Amin Roslan",
   "license": "ISC",
   "dependencies": {
     "@babel/cli": "^7.2.3",
@@ -16,6 +17,7 @@
     "@babel/node": "^7.2.2",
     "@babel/preset-env": "^7.4.2",
     "@types/node": "^11.12.1",
+    "axios": "^0.18.0",
     "cleverbot.io": "^1.0.4",
     "discord.js": "^11.4.2",
     "discord.js-musicbot-addon": "^13.5.0",
