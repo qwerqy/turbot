@@ -38,6 +38,11 @@ client.on("ready", () => {
           [...client.guilds].length
         } servers`
   );
+
+  console.log(client.user)
+  // setInterval(() => {
+    // console.log(client.guilds.map(guild => guild.members))
+  // }, 5000)
 });
 
 client.music.start(client, {
@@ -53,6 +58,10 @@ client.music.start(client, {
     enabled: false
   }
 });
+
+client.on("guildCreate", guild => {
+  //Create a fetch here that adds the guild in a database
+})
 
 client.on("message", async msg => {
   // Disable communications with other bots.
