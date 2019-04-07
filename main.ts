@@ -42,14 +42,15 @@ client.on("ready", () => {
 
   // console.log(client.user)
   setInterval(() => {
+    // Gets all existing guilds Cheese is in before Battlev 2.0 launched. Legacy
     client.guilds.map(guild => {
-      fetch('http://localhost:3001/api/bot/guild', {
+      fetch('http://localhost:3001/api/bot/auto-update', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          id: guild.id
+          gid: guild.id
         })
       })
       .then(res => {
@@ -85,9 +86,27 @@ client.music.start(client, {
   }
 });
 
+// When Cheese gets invited into a new Guild
 client.on("guildCreate", guild => {
-  //Create a fetch here that adds the guild in a database
+  fetch('http://localhost:3001/api/bot/create', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      gid: guild.id,
+      joinDate: guild.joinedAt,
+      ownerID: guild.ownerID
+    })
+  })
+  .then(res => res.status === 200 ? console.log(`Bot successfully joined guild ${guild.id}`) : console.log(`Internal Server Error`))
+  .catch(err => console.log('Error inserting bot: ', err))
 })
+
+client.setInterval(()=> {
+  // Stuff to update the bot go here. override settings, nickname etc.
+
+}, 500)
 
 client.on("message", async msg => {
   // Disable communications with other bots.
