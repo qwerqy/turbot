@@ -6,6 +6,7 @@ import {
 import Cleverbot = require("cleverbot.io");
 import Discord = require("discord.js");
 require("dotenv").config();
+import fetch from "node-fetch"
 const isDevMode: boolean = process.env.NODE_ENV !== "production";
 const botId: number = isDevMode ? 546301684192641024 : 546239335238860827;
 
@@ -39,10 +40,35 @@ client.on("ready", () => {
         } servers`
   );
 
-  console.log(client.user)
-  // setInterval(() => {
-    // console.log(client.guilds.map(guild => guild.members))
-  // }, 5000)
+  // console.log(client.user)
+  setInterval(() => {
+    client.guilds.map(guild => {
+      fetch('http://localhost:3001/api/bot/guild', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          id: guild.id
+        })
+      })
+      .then(res => {
+        if (res.status === 200) { 
+          return res.text()
+        } else {
+          console.log(`Status received: `, res.status, res.statusText)
+        }
+      })
+      .then(data => {
+        if (data === 'Update') console.log(`Guild ${guild.id} added.`)
+      })
+      .catch(err => {
+        console.log(
+          `Error sending guild data: ${err}`
+        )
+      })
+    })
+  }, 5000)
 });
 
 client.music.start(client, {

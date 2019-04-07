@@ -27,7 +27,7 @@
     "typescript": "^3.4.1"
   },
   "devDependencies": {
-    "@types/node-fetch": "^2.1.7",
+    "@types/node-fetch": "^2.3.0",
     "ffmpeg-binaries": "^4.0.0"
   }
 }
