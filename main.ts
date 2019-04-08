@@ -44,7 +44,7 @@ client.on("ready", () => {
   setInterval(() => {
     // Gets all existing guilds Cheese is in before Battlev 2.0 launched. Legacy
     client.guilds.map(guild => {
-      fetch('http://localhost:3001/api/bot/auto-update', {
+      fetch('http://localhost:3001/api/v1/bot/auto-update', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -88,7 +88,7 @@ client.music.start(client, {
 
 // When Cheese gets invited into a new Guild
 client.on("guildCreate", guild => {
-  fetch('http://localhost:3001/api/bot/create', {
+  fetch('http://localhost:3001/api/v1/bot/create', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
