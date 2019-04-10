@@ -9,12 +9,25 @@ require("dotenv").config();
 import fetch from "node-fetch"
 const isDevMode: boolean = process.env.NODE_ENV !== "production";
 const botId: number = isDevMode ? 546301684192641024 : 546239335238860827;
-
+const socket = require('socket.io-client')('http://localhost:3001');
 declare module "discord.js" {
   interface Client {
     music: any;
   }
 }
+
+socket.on('connect', () => {
+  console.log('Socket connected!')
+})
+
+socket.on('news', function (data) {
+  console.log(data);
+  socket.emit('my other event', { my: 'data' });
+});
+
+socket.on('disconnect', () => {
+  console.log('Socket disconnected!')
+})
 
 // creates Client instance
 const client: any = new Discord.Client();
@@ -57,7 +70,7 @@ client.music.start(client, {
 
 // When Cheese gets invited into a new Guild
 client.on("guildCreate", guild => {
-  fetch('http://localhost:3001/api/v1/bot/create', {
+  fetch('http://localhost:3001/api/v1/bots/create', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -73,7 +86,7 @@ client.on("guildCreate", guild => {
 })
 
 client.on("guildDelete", guild => {
-  fetch('http://localhost:3001/api/v1/bot/delete', {
+  fetch('http://localhost:3001/api/v1/bots/delete', {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json'
