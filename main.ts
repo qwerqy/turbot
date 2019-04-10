@@ -39,37 +39,6 @@ client.on("ready", () => {
           [...client.guilds].length
         } servers`
   );
-
-  // console.log(client.user)
-  setInterval(() => {
-    // Gets all existing guilds Cheese is in before Battlev 2.0 launched. Legacy
-    client.guilds.map(guild => {
-      fetch('http://localhost:3001/api/v1/bot/auto-update', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          gid: guild.id
-        })
-      })
-      .then(res => {
-        if (res.status === 200) { 
-          return res.text()
-        } else {
-          console.log(`Status received: `, res.status, res.statusText)
-        }
-      })
-      .then(data => {
-        if (data === 'Update') console.log(`Guild ${guild.id} added.`)
-      })
-      .catch(err => {
-        console.log(
-          `Error sending guild data: ${err}`
-        )
-      })
-    })
-  }, 5000)
 });
 
 client.music.start(client, {
@@ -101,6 +70,20 @@ client.on("guildCreate", guild => {
   })
   .then(res => res.status === 200 ? console.log(`Bot successfully joined guild ${guild.id}`) : console.log(`Internal Server Error`))
   .catch(err => console.log('Error inserting bot: ', err))
+})
+
+client.on("guildDelete", guild => {
+  fetch('http://localhost:3001/api/v1/bot/delete', {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      gid: guild.id
+    })
+  })
+  .then(res => res.status === 200 ? console.log(`Bot successfully deleted from guild ${guild.id}`) : console.log(`Internal Server Error`))
+  .catch(err => console.log('Error deleting bot: ', err))
 })
 
 client.setInterval(()=> {
