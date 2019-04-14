@@ -20,8 +20,15 @@ socket.on('connect', () => {
   console.log('Socket connected!')
 })
 
-socket.on('botUpdate', function (data) {
-  console.log(data);
+socket.on('updateNickname', async function (data, done) {
+  const guild = client.guilds.find(guild => guild.id === data.gid)
+  try {
+    await guild.me.setNickname(data.nickname)
+    done({ status: 1 })
+  } catch (err) {
+    console.log(`Error updating nickname for guild ${data.gid}: ${err}`)
+    done({ status: 0 })
+  }
 });
 
 socket.on('disconnect', () => {
