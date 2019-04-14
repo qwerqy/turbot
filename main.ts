@@ -20,9 +20,8 @@ socket.on('connect', () => {
   console.log('Socket connected!')
 })
 
-socket.on('news', function (data) {
+socket.on('botUpdate', function (data) {
   console.log(data);
-  socket.emit('my other event', { my: 'data' });
 });
 
 socket.on('disconnect', () => {
