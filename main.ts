@@ -16,24 +16,8 @@ declare module "discord.js" {
   }
 }
 
-socket.on('connect', () => {
-  console.log('Socket connected!')
-})
-
-socket.on('updateNickname', async function (data, done) {
-  const guild = client.guilds.find(guild => guild.id === data.gid)
-  try {
-    await guild.me.setNickname(data.nickname)
-    done({ status: 1 })
-  } catch (err) {
-    console.log(`Error updating nickname for guild ${data.gid}: ${err}`)
-    done({ status: 0 })
-  }
-});
-
-socket.on('disconnect', () => {
-  console.log('Socket disconnected!')
-})
+const token = process.env.TOKEN
+const globalPrefix: GPObject = {}
 
 // creates Client instance
 const client: any = new Discord.Client();
@@ -45,7 +29,26 @@ const cleverClient: any = new Cleverbot(
 // Music Player logic
 client.music = require("discord.js-musicbot-addon");
 
-client.on("ready", () => {
+client.on("ready", async () => {
+  await client.guilds.tap(async (guild: any) => {
+    try {
+      const response = await fetch(`http://localhost:3001/api/v1/bots/find?token=${token}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          guildID: guild.id
+        })
+      })
+      const bot = await response.json()
+      globalPrefix[guild.id] = bot.globalPrefix || '>'
+      console.log(`Guild ${guild.id} global prefix set to ${bot.globalPrefix || '>'}`)
+    } catch(err) {
+      console.log(`Error fetching data for guild ${guild.id}: `, err)
+    }
+  })
+
   console.log(`
   Bot is in ${process.env.NODE_ENV} mode.
   Logged in as ${client.user.tag}!
@@ -73,6 +76,37 @@ client.music.start(client, {
     enabled: false
   }
 });
+
+socket.on('connect', () => {
+  console.log('Socket connected!')
+})
+
+socket.on('updateNickname', async function (data, done) {
+  const guild = client.guilds.find(guild => guild.id === data.gid)
+  try {
+    await guild.me.setNickname(data.nickname)
+    done({ status: 1 })
+  } catch (err) {
+    console.log(`Error updating nickname for guild ${data.gid}: ${err}`)
+    done({ status: 0 })
+  }
+});
+
+socket.on('updateGlobalPrefix', async function (data, done) {
+  const guild = client.guilds.find(guild => guild.id === data.gid)
+  try {
+    globalPrefix[guild.id] = data.globalPrefix
+    console.log(`Successfully set Guild ${guild.id} global prefix to ${data.globalPrefix}`)
+    done({ status: 1 })
+  } catch (err) {
+    console.log(`Error updating nickname for guild ${data.gid}: ${err}`)
+    done({ status: 0 })
+  }
+});
+
+socket.on('disconnect', () => {
+  console.log('Socket disconnected!')
+})
 
 // When Cheese gets invited into a new Guild
 client.on("guildCreate", guild => {
@@ -105,21 +139,16 @@ client.on("guildDelete", guild => {
   .catch(err => console.log('Error deleting bot: ', err))
 })
 
-client.setInterval(()=> {
-  // Stuff to update the bot go here. override settings, nickname etc.
-
-}, 500)
-
 client.on("message", async msg => {
   // Disable communications with other bots.
   if (msg.author.bot) return;
   // Disable access to DevMode bot in other servers.
-  if (
-    isDevMode &&
-    msg.guild.id !== "541382645670608906" &&
-    msg.author.id !== "533610248142061579"
-  )
-    return;
+  // if (
+  //   isDevMode &&
+  //   msg.guild.id !== "541382645670608906" &&
+  //   msg.author.id !== "533610248142061579"
+  // )
+  //   return;
   if (
     msg.content.toLowerCase().includes("cheese") ||
     msg.content.toLowerCase().includes("<@546239335238860827>")
@@ -147,9 +176,8 @@ client.on("message", async msg => {
     });
   }
 
-  const symbol: string = process.env.NODE_ENV !== "production" ? "<" : ">";
+  const symbol: string = globalPrefix[msg.guild.id];
 
-  // Sets commands that start with '>'
   if (msg.content.substring(0, 1) === symbol) {
     const musicBot: any = client.music.bot;
     const args: Array<string> = msg.content.substring(1).split(" ");
