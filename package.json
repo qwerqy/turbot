@@ -25,6 +25,7 @@
     "node-fetch": "^2.3.0",
     "node-opus": "^0.3.1",
     "socket.io-client": "^2.2.0",
+    "ts-node-dev": "^1.0.0-pre.41",
     "typescript": "^3.4.1"
   },
   "devDependencies": {

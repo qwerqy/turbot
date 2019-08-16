@@ -32,7 +32,7 @@ client.music = require("discord.js-musicbot-addon");
 client.on("ready", async () => {
   await client.guilds.tap(async (guild: any) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/v1/bots/find?token=${token}`, {
+      const response = await fetch(`http://localhost:3001/api/v1/bots/find`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
