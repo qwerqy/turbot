@@ -42,6 +42,25 @@ client.on("ready", async () => {
         })
       })
       const bot = await response.json()
+
+      // This only runs if the bot database is incomplete. Though, it creates a new bot document,
+      // which means, the old bot settings will be back to default.
+      if (bot.message === 'botNotInGuild') {
+        console.log(`Bot document not found for guild ${guild.id}, creating new document...`)
+        fetch('http://localhost:3001/api/v1/bots/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          gid: guild.id,
+          joinDate: guild.joinedAt,
+          ownerID: guild.ownerID
+        })
+      })
+      .then(res => res.status === 200 ? console.log(`Bot successfully re-created for guild ${guild.id}`) : console.log(`Internal Server Error`))
+      .catch(err => console.log('Error re-creating bot: ', err))
+      } 
       globalPrefix[guild.id] = bot.globalPrefix || '>'
       console.log(`Guild ${guild.id} global prefix set to ${bot.globalPrefix || '>'}`)
     } catch(err) {
