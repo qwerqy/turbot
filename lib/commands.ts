@@ -9,19 +9,19 @@ export const createStatusEmbed = (client: any) => {
     fields: [
       {
         name: "Status:",
-        value: client.status === 0 ? "Online" : "Internal Error"
+        value: client.status === 0 ? "Online" : "Internal Error",
       },
       {
         name: "Uptime:",
-        value: `${client.uptime}`
+        value: `${client.uptime}`,
       },
       {
         name: "Presence:",
         value: `Cheese is in ${[...client.guilds].length} server${
           [...client.guilds].length <= 1 ? "" : "s"
-        }`
-      }
-    ]
+        }`,
+      },
+    ],
   });
 };
 
@@ -30,16 +30,14 @@ export const createHelpEmbed = () => {
     title: "Need Help?",
     color: 0x00ff000,
     description: "Commands:",
-    fields: helpCommands
+    fields: helpCommands,
   });
 };
 
 export const createMemeEmbed = async (suffix: string, msg: any) => {
   const fetchMeme = async () => {
     const res = await fetch(
-      `https://api.tenor.com/v1/search?key=${
-        process.env.TENOR_API
-      }&q=${suffix}&locale=en_US`
+      `https://api.tenor.com/v1/search?key=${process.env.TENOR_API_KEY}&q=${suffix}&locale=en_US`
     );
     const list = await res.json();
     const media = list.results[getRandom(list.results.length)].media;
@@ -49,10 +47,10 @@ export const createMemeEmbed = async (suffix: string, msg: any) => {
 
   return new Discord.RichEmbed({
     image: {
-      url: await fetchMeme()
+      url: await fetchMeme(),
     },
     footer: {
-      text: `Requested by ${msg.author.username}`
-    }
+      text: `Requested by ${msg.author.username}`,
+    },
   });
 };
