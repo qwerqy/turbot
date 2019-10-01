@@ -1,4 +1,8 @@
-# Clientbot for Battlev
+# tehBot
+
+_Formerly called **Battlev**_
+
+_Documentation will be updated soon\*_
 
 This is the source code for the Discord bot.
 
@@ -10,16 +14,15 @@ This is the source code for the Discord bot.
 
 You need to provide the ENVs for some of the logic. Though most of them have a default value.
 
-| ENV | Default |
-|-----|---------|
-| DISCORD_SECRET | None |
-| DISCORD_DEV_SECRET | None |
-| CLEVERBOT_USER | None |
-| CLEVERBOT_KEY | None |
-| NODE_ENV | local |
-| YOUTUBE_API | None |
-| OWNER_ID | None|
-
+| ENV                | Default |
+| ------------------ | ------- |
+| DISCORD_SECRET     | None    |
+| DISCORD_DEV_SECRET | None    |
+| CLEVERBOT_USER     | None    |
+| CLEVERBOT_KEY      | None    |
+| NODE_ENV           | local   |
+| YOUTUBE_API        | None    |
+| OWNER_ID           | None    |
 
 ## Get Started
 
