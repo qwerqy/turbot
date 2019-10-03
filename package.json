@@ -1,13 +1,14 @@
 {
-  "name": "clientbot",
+  "name": "tehbot",
   "version": "1.0.0",
   "description": "",
   "main": "main.ts",
   "private": true,
   "scripts": {
-    "bot": "tsc && NODE_ENV=production node .build/main.js",
-    "bot:staging": "tsc && NODE_ENV=staging forever start .build/main.js",
-    "bot:dev": "NODE_ENV=local ts-node-dev --respawn --transpileOnly main.ts"
+    "tsc": "tsc",
+    "start:prod": "NODE_ENV=production pm2 start .build/main.js",
+    "start:stage": "NODE_ENV=staging pm2 start .build/main.js",
+    "dev": "NODE_ENV=local ts-node-dev --respawn --transpileOnly main.ts"
   },
   "keywords": [],
   "author": "Amin Roslan",
@@ -22,7 +23,6 @@
     "cleverbot.io": "^1.0.4",
     "discord.js": "^11.5.1",
     "dotenv": "^7.0.0",
-    "forever": "^1.0.0",
     "node-fetch": "^2.3.0",
     "ts-node-dev": "^1.0.0-pre.43",
     "typescript": "^3.6.3"
