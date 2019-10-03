@@ -21,6 +21,7 @@
     "cleverbot.io": "^1.0.4",
     "discord.js": "^11.5.1",
     "dotenv": "^7.0.0",
+    "forever": "^1.0.0",
     "node-fetch": "^2.3.0",
     "ts-node-dev": "^1.0.0-pre.43",
     "typescript": "^3.6.3"
