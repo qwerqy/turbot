@@ -2,10 +2,11 @@
   "name": "clientbot",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "main.ts",
   "private": true,
   "scripts": {
     "bot": "tsc && NODE_ENV=production node .build/main.js",
+    "bot:staging": "tsc && NODE_ENV=staging forever start .build/main.js",
     "bot:dev": "NODE_ENV=local ts-node-dev --respawn --transpileOnly main.ts"
   },
   "keywords": [],
