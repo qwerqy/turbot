@@ -4,6 +4,13 @@ import {
   listGuildBots,
   deleteGuildBot,
   createCommand,
+  onCreateCommand,
+  onUpdateCommand,
+  onDeleteCommand,
+  onUpdateGuildBot,
+  onDeleteGuildBot,
+  deleteCommand,
+  listCommands,
 } from "./lib/graphql";
 // import Cleverbot = require("cleverbot.io");
 import Amplify = require("aws-amplify");
@@ -13,7 +20,8 @@ import {
   createMemeEmbed,
   createStatusEmbed,
 } from "./lib/commands";
-
+// @ts-ignore
+global.WebSocket = require("ws");
 require("dotenv").config();
 
 Amplify.default.configure({
@@ -34,6 +42,8 @@ const client: any = new Discord.Client();
 //   process.env.CLEVERBOT_USER,
 //   process.env.CLEVERBOT_KEY
 // );
+
+let customCommands = [];
 
 client.on("ready", async () => {
   console.log(`
@@ -71,7 +81,7 @@ client.on("guildCreate", async guild => {
     };
 
     const newCommand = {
-      guildBotCommandsId: guild.id,
+      commandGuildBotId: guild.id,
       cmd: "ping",
       message: "Pong!",
     };
@@ -102,11 +112,28 @@ client.on("guildCreate", async guild => {
 });
 
 client.on("guildDelete", async guild => {
-  await Amplify.API.graphql(
-    Amplify.graphqlOperation(deleteGuildBot, { input: { id: guild.id } })
-  );
+  try {
+    const allCommands = await Amplify.API.graphql(
+      Amplify.graphqlOperation(listCommands)
+    );
 
-  console.log(`Guild ${guild.id} removed from database.`);
+    allCommands.data.listCommands.items
+      .filter(command => command.guildBot.id === guild.id)
+      .map(async command => {
+        await Amplify.API.graphql(
+          Amplify.graphqlOperation(deleteCommand, {
+            input: { id: command.id },
+          })
+        );
+      });
+
+    await Amplify.API.graphql(
+      Amplify.graphqlOperation(deleteGuildBot, { input: { id: guild.id } })
+    );
+    console.log(`Guild ${guild.id} removed from database.`);
+  } catch (err) {
+    console.log("Error deleting guild: ", err);
+  }
 });
 
 client.on("message", async msg => {
@@ -116,12 +143,73 @@ client.on("message", async msg => {
       return;
     }
 
+    Amplify.API.graphql(Amplify.graphqlOperation(onUpdateGuildBot)).subscribe({
+      next: guildBotData => {
+        globalPrefix[msg.guild.id] =
+          guildBotData.value.data.onUpdateGuildBot.prefix;
+      },
+    });
+
+    Amplify.API.graphql(Amplify.graphqlOperation(onDeleteGuildBot)).subscribe({
+      next: guildBotData => {
+        delete globalPrefix[msg.guild.id];
+
+        guildBotData.value.data.onDeleteGuildBot.commands.items.map(command => {
+          customCommands.filter(c => c.id !== command.id);
+        });
+      },
+    });
+
     const symbol: string = globalPrefix[msg.guild.id] || ">";
 
     if (msg.content.substring(0, 1) === symbol) {
       const args: string[] = msg.content.substring(1).split(" ");
       const cmd: string = args[0];
       const suffix: string = args.splice(1).join(" ");
+
+      const { data } = await Amplify.API.graphql(
+        Amplify.graphqlOperation(getGuildBot, {
+          id: msg.guild.id,
+        })
+      );
+
+      customCommands = [...data.getGuildBot.commands.items];
+
+      Amplify.API.graphql(Amplify.graphqlOperation(onCreateCommand)).subscribe({
+        next: commandData => {
+          customCommands = [
+            ...customCommands,
+            commandData.value.data.onCreateCommand,
+          ];
+          console.log(
+            `New custom command added ${commandData.value.data.onCreateCommand.id}`
+          );
+        },
+      });
+
+      Amplify.API.graphql(Amplify.graphqlOperation(onUpdateCommand)).subscribe({
+        next: commandData => {
+          customCommands = [
+            ...customCommands,
+            commandData.value.data.onUpdateCommand,
+          ];
+          console.log(
+            `Custom command updated ${commandData.value.data.onUpdateCommand.id}`
+          );
+        },
+      });
+
+      Amplify.API.graphql(Amplify.graphqlOperation(onDeleteCommand)).subscribe({
+        next: commandData => {
+          customCommands = [
+            ...customCommands,
+            commandData.value.data.onDeleteCommand,
+          ];
+          console.log(
+            `Custom command deleted ${commandData.value.data.onDeleteCommand.id}`
+          );
+        },
+      });
 
       switch (cmd) {
         case "status":
@@ -140,14 +228,8 @@ client.on("message", async msg => {
           break;
         }
         default: {
-          const { data } = await Amplify.API.graphql(
-            Amplify.graphqlOperation(getGuildBot, {
-              id: msg.guild.id,
-            })
-          );
-
           if (data) {
-            data.getGuildBot.commands.items.map(command => {
+            customCommands.map(command => {
               if (command.cmd === cmd) {
                 msg.reply(command.message);
               }

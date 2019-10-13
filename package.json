@@ -26,7 +26,8 @@
     "dotenv": "^7.0.0",
     "node-fetch": "^2.3.0",
     "ts-node-dev": "^1.0.0-pre.43",
-    "typescript": "^3.6.3"
+    "typescript": "^3.6.3",
+    "ws": "^3.3.3"
   },
   "devDependencies": {
     "@types/node-fetch": "^2.3.0"
