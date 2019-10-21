@@ -14,10 +14,14 @@ jobs:
       # documented at https://circleci.com/docs/2.0/circleci-images/
       # - image: circleci/mongo:3.4.4
 
-    working_directory: ~/tehbot
+    working_directory: ~/tehbot/src
 
     steps:
-      - checkout
+      - checkout:
+          path: ~/tehbot/src
+
+      - run:
+          command: ls /home/circleci/tehbot/src/
 
       # Download and cache dependencies
       - restore_cache:
@@ -27,8 +31,43 @@ jobs:
             - v1-dependencies-
 
       - run: npm ci
-
       - save_cache:
+          key: v1-dependencies-{{ checksum "package.json" }}
           paths:
             - node_modules
+      - run:
+          name: Build app
+          command: npm run tsc
+      - save_cache:
+          key: v1-build-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_SHA1 }}
+          paths:
+            - .build
+      - save_cache:
           key: v1-dependencies-{{ checksum "package.json" }}
+          paths:
+            - node_modules
+  deploy:
+    docker:
+      - image: circleci/node:12.10.0
+    steps:
+      - run:
+          name: Deploy production
+          command: |
+            ssh -o StrictHostKeyChecking=no ubuntu@3.1.83.218 \
+            "echo Start deploy && \
+            cd ~/app/bot && \
+            git pull && \
+            npm i && \
+            npm run tsc && \ 
+            pm2 stop .build/main.js && \
+            pm2 start .build/main.js && \
+            echo Deploy end" 
+
+workflows:
+  version: 2
+  build_and_deploy:
+    jobs:
+      - build
+      - deploy:
+          requires:
+            - build
