@@ -53,7 +53,7 @@ jobs:
       - run:
           name: Deploy production
           command: |
-            scp -r -o StrictHostKeyChecking=no ./ ubuntu@13.236.1.107:/app/bot/tehbot/
+            scp -r -o StrictHostKeyChecking=no ./ ubuntu@18.139.255.159:/app/bot/tehbot/
             ssh -o StrictHostKeyChecking=no ubuntu@18.139.255.159 \
             "echo Start deploy && \
             cd ~/app/bot/tehbot && \
