@@ -53,7 +53,7 @@ jobs:
       - run:
           name: Deploy production
           command: |
-            ssh -o StrictHostKeyChecking=no ubuntu@3.1.83.218 "./scripts/deploy.sh"
+            ssh -o StrictHostKeyChecking=no ubuntu@3.1.83.218 "../scripts/deploy.sh"
 
 workflows:
   version: 2
