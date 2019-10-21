@@ -21,7 +21,7 @@ jobs:
           path: ~/tehbot/src
 
       - run:
-        command: ls /home/circleci/tehbot/src/
+          command: ls /home/circleci/tehbot/src/
 
       # Download and cache dependencies
       - restore_cache:
