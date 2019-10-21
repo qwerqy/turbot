@@ -65,7 +65,7 @@ jobs:
             npm run tsc && \ 
             export NODE_ENV=production && \
             echo start pm2 && \
-            pm2 stop .build/main.js && \
+            pm2 stop main \
             pm2 start .build/main.js && \
             echo Deploy end" 
 
