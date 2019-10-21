@@ -53,7 +53,15 @@ jobs:
       - run:
           name: Deploy production
           command: |
-            ssh -o StrictHostKeyChecking=no ubuntu@3.1.83.218 "../scripts/deploy.sh"
+            ssh -o StrictHostKeyChecking=no ubuntu@3.1.83.218 \
+            "echo Start deploy && \
+            cd ~/app/bot && \
+            git pull && \
+            npm i && \
+            npm run tsc && \ 
+            pm2 stop .build/main.js && \
+            pm2 start .build/main.js && \
+            echo "Deploy end" 
 
 workflows:
   version: 2
