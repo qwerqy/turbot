@@ -53,7 +53,7 @@ jobs:
       - run:
           name: Deploy production
           command: |
-            ssh -o StrictHostKeyChecking=no ubuntu@18.139.255.159 \
+            ssh -o StrictHostKeyChecking=no ubuntu@54.169.170.107 \
             "echo Start deploy && \
             cd ~/app/bot/tehbot && \
             echo git pull && \
@@ -63,6 +63,7 @@ jobs:
             npm install && \
             echo compile typescript && \
             npm run tsc && \ 
+            export NODE_ENV=production && \
             echo start pm2 && \
             pm2 stop .build/main.js && \
             pm2 start .build/main.js && \
