@@ -55,6 +55,13 @@ jobs:
           command: |
             ssh -o StrictHostKeyChecking=no ubuntu@54.169.170.107 \
             "echo Start deploy && \
+            echo export NODE_ENV=production && \
+            echo export AWS_APPSYNC_APIKEY=$AWS_APPSYNC_APIKEY && \
+            echo export AWS_APPSYNC_GRAPHQLENDPOINT=$AWS_APPSYNC_GRAPHQLENDPOINT && \
+            echo export AWS_APPSYNC_REGION=$AWS_APPSYNC_REGION && \
+            echo export DISCORD_BOT_TOKEN=$DISCORD_BOT_TOKEN && \
+            echo export TENOR_API_KEY=$TENOR_API_KEY && \
+            printenv && \
             cd ~/app/bot/tehbot && \
             echo git pull && \
             git checkout develop && \
@@ -63,7 +70,6 @@ jobs:
             npm install && \
             echo compile typescript && \
             npm run tsc && \ 
-            export NODE_ENV=production && \
             echo start pm2 && \
             pm2 stop main \
             pm2 start .build/main.js && \
