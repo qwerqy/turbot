@@ -37,7 +37,7 @@ jobs:
       - save_cache:
           key: v1-build-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_SHA1 }}
           paths:
-              - .build
+            - .build
       - save_cache:
           paths:
             - node_modules
@@ -51,11 +51,9 @@ jobs:
           - v1-dependencies-{{ checksum "package.json" }}
       - run:
           name: Deploy production
-          command: |
-          #upload all the code to machine
-          scp -r -o StrictHostKeyChecking=no ./ ubuntu@13.236.1.107:/app/bot/
-          #Run script inside of machine
-          ssh -o StrictHostKeyChecking=no ubuntu@13.236.1.107 "./deploy.sh"
+          command:
+            - scp -r -o StrictHostKeyChecking=no ./ ubuntu@3.1.83.218:/app/bot/
+            - ssh -o StrictHostKeyChecking=no ubuntu@3.1.83.218 "./deploy.sh"
 
 workflows:
   version: 2
