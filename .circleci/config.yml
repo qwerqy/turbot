@@ -71,7 +71,7 @@ jobs:
             echo compile typescript && \
             npm run tsc && \ 
             echo start pm2 && \
-            pm2 stop main \
+            pm2 stop main && \
             pm2 start .build/main.js && \
             echo Deploy end" 
 
