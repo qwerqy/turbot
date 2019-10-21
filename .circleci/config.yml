@@ -50,20 +50,9 @@ jobs:
     docker:
       - image: circleci/node:12.10.0
     steps:
-      - checkout:
-          path: ~/tehbot/src
-
-      - run:
-          command: ls /home/circleci/tehbot/src/
-
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "package.json" }}
-            - v1-dependencies-
       - run:
           name: Deploy production
           command: |
-            scp -r -o StrictHostKeyChecking=no ./ ubuntu@3.1.83.218:/app/bot/ |
             ssh -o StrictHostKeyChecking=no ubuntu@3.1.83.218 "./scripts/deploy.sh"
 
 workflows:
