@@ -55,12 +55,12 @@ jobs:
           command: |
             ssh -o StrictHostKeyChecking=no ubuntu@54.169.170.107 \
             "echo Start deploy && \
-            echo export NODE_ENV=production && \
-            echo export AWS_APPSYNC_APIKEY=$AWS_APPSYNC_APIKEY && \
-            echo export AWS_APPSYNC_GRAPHQLENDPOINT=$AWS_APPSYNC_GRAPHQLENDPOINT && \
-            echo export AWS_APPSYNC_REGION=$AWS_APPSYNC_REGION && \
-            echo export DISCORD_BOT_TOKEN=$DISCORD_BOT_TOKEN && \
-            echo export TENOR_API_KEY=$TENOR_API_KEY && \
+            export NODE_ENV=production && \
+            export AWS_APPSYNC_APIKEY=$AWS_APPSYNC_APIKEY && \
+            export AWS_APPSYNC_GRAPHQLENDPOINT=$AWS_APPSYNC_GRAPHQLENDPOINT && \
+            export AWS_APPSYNC_REGION=$AWS_APPSYNC_REGION && \
+            export DISCORD_BOT_TOKEN=$DISCORD_BOT_TOKEN && \
+            export TENOR_API_KEY=$TENOR_API_KEY && \
             printenv && \
             cd ~/app/bot/tehbot && \
             echo git pull && \
