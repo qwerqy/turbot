@@ -51,9 +51,9 @@ jobs:
             - v1-dependencies-{{ checksum "package.json" }}
       - run:
           name: Deploy production
-          command:
-            - scp -r -o StrictHostKeyChecking=no ./ ubuntu@3.1.83.218:/app/bot/
-            - ssh -o StrictHostKeyChecking=no ubuntu@3.1.83.218 "./deploy.sh"
+          command: |
+            scp -r -o StrictHostKeyChecking=no ./ ubuntu@3.1.83.218:/app/bot/ |
+            ssh -o StrictHostKeyChecking=no ubuntu@3.1.83.218 "./deploy.sh"
 
 workflows:
   version: 2
