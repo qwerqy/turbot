@@ -61,7 +61,7 @@ jobs:
             npm run tsc && \ 
             pm2 stop .build/main.js && \
             pm2 start .build/main.js && \
-            echo "Deploy end" 
+            echo Deploy end" 
 
 workflows:
   version: 2
