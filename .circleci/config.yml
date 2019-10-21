@@ -14,10 +14,14 @@ jobs:
       # documented at https://circleci.com/docs/2.0/circleci-images/
       # - image: circleci/mongo:3.4.4
 
-    working_directory: ~/tehbot
+    working_directory: ~/tehbot/src
 
     steps:
-      - checkout
+      - checkout:
+          path: ~/tehbot/src
+
+      - run:
+        command: ls /home/circleci/tehbot/src/
 
       # Download and cache dependencies
       - restore_cache:
@@ -49,6 +53,7 @@ jobs:
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "package.json" }}
+            - v1-dependencies-
       - run:
           name: Deploy production
           command: |
