@@ -56,9 +56,14 @@ jobs:
             ssh -o StrictHostKeyChecking=no ubuntu@3.1.83.218 \
             "echo Start deploy && \
             cd ~/app/bot/tehbot && \
+            echo git pull && \
+            git checkout develop && \
             git pull && \
-            npm i && \
+            echo install dependencies && \
+            npm install && \
+            echo compile typescript && \
             npm run tsc && \ 
+            echo start pm2 && \
             pm2 stop .build/main.js && \
             pm2 start .build/main.js && \
             echo Deploy end" 
