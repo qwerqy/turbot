@@ -16,13 +16,15 @@ jobs:
     steps:
       - checkout:
           path: ~/src
-      - run:
-          command: ls /home/circleci/src
+      - setup_remote_docker:
+          docker_layer_caching: true
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "package.json" }}
             - v1-dependencies-
-      - run: npm ci
+      - run:
+          name: Install dependencies
+          command: npm ci
       - save_cache:
           key: v1-dependencies-{{ checksum "package.json" }}
           paths:
