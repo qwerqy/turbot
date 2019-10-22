@@ -39,7 +39,7 @@ jobs:
       - run:
           name: Copy to server
           command: |
-            scp -o StrictHostKeyChecking=no . $TEHBOT_LIGHTSAIL_USERNAME@$TEHBOT_LIGHTSAIL_PUBLIC_IP:/app/bot/tehbot
+            scp -o StrictHostKeyChecking=no -r . $TEHBOT_LIGHTSAIL_USERNAME@$TEHBOT_LIGHTSAIL_PUBLIC_IP:/app/bot/tehbot
       - run:
           name: Run deploy script
           command: |
