@@ -44,5 +44,5 @@ jobs:
           command: |
             TAG=0.1.$CIRCLE_BUILD_NUM
             docker build -f Dockerfile.staging -t amnrsln/turbot-staging:$TAG .
-            docker login -u $DOCKER_USER -p $DOCKER_PASS
+            docker login -u $DOCKER_USER --password-stdin $DOCKER_PASS
             docker push $DOCKER_USER/turbot-staging:$TAG
