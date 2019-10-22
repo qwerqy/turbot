@@ -1,14 +1,23 @@
 version: 2
 jobs:
   build:
+    branches:
+        only:
+          - develop
     docker:
       - image: circleci/node:12.10.0
-    working_directory: ~/tehbot/src
+    environment:
+      DISCORD_BOT_TOKEN: $DISCORD_BOT_TOKEN_STAGING
+      AWS_APPSYNC_APIKEY: $AWS_APPSYNC_APIKEY_STAGING
+      AWS_APPSYNC_GRAPHQLENDPOINT: $AWS_APPSYNC_GRAPHQLENDPOINT_STAGING
+      AWS_APPSYNC_REGION: $AWS_APPSYNC_REGION_STAGING
+      TENOR_API_KEY: $TENOR_API_KEY
+    working_directory: ~/src
     steps:
       - checkout:
-          path: ~/tehbot/src
+          path: ~/src
       - run:
-          command: ls /home/circleci/tehbot/src/
+          command: ls /home/circleci/src
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "package.json" }}
@@ -29,18 +38,10 @@ jobs:
           key: v1-dependencies-{{ checksum "package.json" }}
           paths:
             - node_modules
-      - add_ssh_keys:
-          fingerprints:
-            - "b5:de:74:77:84:ac:c5:60:d6:ef:14:b1:e4:63:60:c6"
       - run:
-          command: ls
-      - run:
-          command: pwd
-      - run:
-          name: Copy to server
+          name: Push to Dockerhub
           command: |
-            scp -o StrictHostKeyChecking=no -r . $TEHBOT_LIGHTSAIL_USERNAME@$TEHBOT_LIGHTSAIL_PUBLIC_IP:/home/${TEHBOT_LIGHTSAIL_USERNAME}/app/bot/tehbot
-      - run:
-          name: Run deploy script
-          command: |
-            ssh -o StrictHostKeyChecking=no $TEHBOT_LIGHTSAIL_USERNAME@$TEHBOT_LIGHTSAIL_PUBLIC_IP "./scripts/deploy.sh"
+          TAG=0.1.$CIRCLE_BUILD_NUM
+          docker build -f Dockerfile.staging -t amnrsln/turbot-staging:$TAG .
+          docker login -u $DOCKER_USER -p $DOCKER_PASS
+          docker push $DOCKER_USER/turbot-staging:$TAG
