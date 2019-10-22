@@ -51,7 +51,8 @@ jobs:
           name: SSH to server
           command: |
             ssh $TEHBOT_LIGHTSAIL_USERNAME@$TEHBOT_LIGHTSAIL_PUBLIC_IP \
-            "docker pull amnrsln/turbot-staging:0.1.${CIRCLE_SHA1} && \
+            "docker login -u $DOCKER_USER -p $DOCKER_PASS && \
+            docker pull amnrsln/turbot-staging:0.1.${CIRCLE_SHA1} && \
             docker container stop turbot-staging && \
             docker container rm turbot-staging && \
             docker container --name turbot-staging  \
