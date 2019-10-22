@@ -57,6 +57,11 @@ jobs:
             docker run --name turbot-staging  \
             -p 8080:8080 \
             --restart=unless-stopped \
+            -e DISCORD_BOT_TOKEN=$DISCORD_BOT_TOKEN_STAGING \
+            -e AWS_APPSYNC_APIKEY: $AWS_APPSYNC_APIKEY_STAGING \
+            -e AWS_APPSYNC_GRAPHQLENDPOINT: $AWS_APPSYNC_GRAPHQLENDPOINT_STAGING \
+            -e AWS_APPSYNC_REGION: $AWS_APPSYNC_REGION_STAGING \
+            -e TENOR_API_KEY: $TENOR_API_KEY \
             -d amnrsln/turbot-staging:0.1.${CIRCLE_SHA1}"
 
 workflows:
