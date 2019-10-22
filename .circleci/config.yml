@@ -35,8 +35,8 @@ jobs:
       - run:
           name: Copy to server
           command: |
-            scp /home/circleci/tehboard/src/ $TEHBOT_LIGHTSAIL_USERNAME@$TEHBOT_LIGHTSAIL_PUBLIC_IP:/app/bot/tehbot
+            scp StrictHostKeyChecking=no /home/circleci/tehboard/src/ $TEHBOT_LIGHTSAIL_USERNAME@$TEHBOT_LIGHTSAIL_PUBLIC_IP:/app/bot/tehbot
       - run:
           name: Run deploy script
           command: |
-            ssh -o StrictHostKeyChecking=no ubuntu@54.169.170.107 "./scripts/deploy.sh"
+            ssh -o StrictHostKeyChecking=no $TEHBOT_LIGHTSAIL_USERNAME@$TEHBOT_LIGHTSAIL_PUBLIC_IP "./scripts/deploy.sh"
