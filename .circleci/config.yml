@@ -2,8 +2,8 @@ version: 2
 jobs:
   build:
     branches:
-        only:
-          - develop
+      only:
+        - develop
     docker:
       - image: circleci/node:12.10.0
         environment:
@@ -41,7 +41,7 @@ jobs:
       - run:
           name: Push to Dockerhub
           command: |
-          TAG=0.1.$CIRCLE_BUILD_NUM
-          docker build -f Dockerfile.staging -t amnrsln/turbot-staging:$TAG .
-          docker login -u $DOCKER_USER -p $DOCKER_PASS
-          docker push $DOCKER_USER/turbot-staging:$TAG
+            TAG=0.1.$CIRCLE_BUILD_NUM
+            docker build -f Dockerfile.staging -t amnrsln/turbot-staging:$TAG .
+            docker login -u $DOCKER_USER -p $DOCKER_PASS
+            docker push $DOCKER_USER/turbot-staging:$TAG
