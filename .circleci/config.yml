@@ -33,9 +33,13 @@ jobs:
           fingerprints:
             - "b5:de:74:77:84:ac:c5:60:d6:ef:14:b1:e4:63:60:c6"
       - run:
+          command: ls
+      - run:
+          command: pwd
+      - run:
           name: Copy to server
           command: |
-            scp -o StrictHostKeyChecking=no /. $TEHBOT_LIGHTSAIL_USERNAME@$TEHBOT_LIGHTSAIL_PUBLIC_IP:/app/bot/tehbot
+            scp -o StrictHostKeyChecking=no . $TEHBOT_LIGHTSAIL_USERNAME@$TEHBOT_LIGHTSAIL_PUBLIC_IP:/app/bot/tehbot
       - run:
           name: Run deploy script
           command: |
