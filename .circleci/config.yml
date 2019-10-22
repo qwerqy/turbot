@@ -16,8 +16,7 @@ jobs:
     steps:
       - checkout:
           path: ~/src
-      - setup_remote_docker:
-          docker_layer_caching: true
+      - setup_remote_docker
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "package.json" }}
