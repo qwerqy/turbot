@@ -53,11 +53,11 @@ jobs:
             ssh $TEHBOT_LIGHTSAIL_USERNAME@$TEHBOT_LIGHTSAIL_PUBLIC_IP \
             "docker login -u $DOCKER_USER -p $DOCKER_PASS && \
             docker pull amnrsln/turbot-staging:0.1.${CIRCLE_SHA1} && \
-            docker container stop turbot-staging && \
-            docker container rm turbot-staging && \
-            docker container --name turbot-staging  \
+            docker stop turbot-staging || true && docker rm turbot-staging || true && \
+            docker run --name turbot-staging  \
+            -p 8080:8080 \
             --restart=unless-stopped \
-            run -d amnrsln/turbot-staging:0.1.${CIRCLE_SHA1}"
+            -d amnrsln/turbot-staging:0.1.${CIRCLE_SHA1}"
 
 workflows:
   version: 2
