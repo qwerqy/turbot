@@ -2,6 +2,7 @@ import Discord = require("discord.js");
 import fetch from "node-fetch";
 import helpCommands from "../assets/help";
 import { getRandom } from "./utilities";
+import moment from "moment";
 
 export const createStatusEmbed = (client: any) => {
   return new Discord.RichEmbed({
@@ -12,12 +13,12 @@ export const createStatusEmbed = (client: any) => {
         value: client.status === 0 ? "Online" : "Internal Error",
       },
       {
-        name: "Uptime:",
-        value: `${client.uptime}`,
+        name: "Version:",
+        value: `${process.env.TURBOT_VERSION}`,
       },
       {
         name: "Presence:",
-        value: `Cheese is in ${[...client.guilds].length} server${
+        value: `Turbot is in ${[...client.guilds].length} server${
           [...client.guilds].length <= 1 ? "" : "s"
         }`,
       },
@@ -27,7 +28,7 @@ export const createStatusEmbed = (client: any) => {
 
 export const createHelpEmbed = () => {
   return new Discord.RichEmbed({
-    title: "Need Help?",
+    title: "Hello I am Turbot, a Discord bot created by Qwerqy",
     color: 0x00ff000,
     description: "Commands:",
     fields: helpCommands,

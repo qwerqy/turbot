@@ -1,3 +1,8 @@
 interface GPObject {
-  [key: string]: string
+  [key: string]: string;
+}
+
+interface IGuildObject {
+  id: string;
+  prefix: string;
 }

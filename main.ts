@@ -1,9 +1,12 @@
+import { guilds } from "./lib/db/init";
 import Discord = require("discord.js");
 import {
   createHelpEmbed,
   createMemeEmbed,
   createStatusEmbed,
 } from "./lib/commands";
+import setPrefix from "./lib/commands/setPrefix";
+// tslint:disable-next-line: no-var-requires
 require("dotenv").config();
 
 const isDevMode: boolean = process.env.NODE_ENV !== "production";
@@ -28,26 +31,36 @@ client.on("ready", async () => {
         } servers`
   );
 
+  const array = await guilds.find().toArray();
+  array.map((guild: IGuildObject) => {
+    globalPrefix[guild.id] = guild.prefix;
+  });
+
   console.log("Setting global prefix");
   console.log(globalPrefix);
 });
 
-// When Cheese gets invited into a new Guild
-client.on("guildCreate", async guild => {
+client.on("guildCreate", async (guild: Discord.Guild) => {
   try {
+    const guildTemplate = {
+      id: guild.id,
+      prefix: ">",
+    };
+    await guilds.insertOne(guildTemplate);
   } catch (err) {
     console.log(`Error adding to guild ${guild.id}`, err);
   }
 });
 
-client.on("guildDelete", async guild => {
+client.on("guildDelete", async (guild: Discord.Guild) => {
   try {
+    await guilds.deleteOne({ id: guild.id });
   } catch (err) {
     console.log("Error deleting guild: ", err);
   }
 });
 
-client.on("message", async msg => {
+client.on("message", async (msg: Discord.Message) => {
   try {
     // Disable communications with other bots.
     if (msg.author.bot) {
@@ -74,6 +87,20 @@ client.on("message", async msg => {
           } else {
             msg.reply("Key in your search query sir.");
           }
+          break;
+        }
+        case "set": {
+          const update = suffix.split(" ");
+          const [reducer, value] = update;
+
+          switch (reducer) {
+            case "prefix":
+              await setPrefix(reducer, value, msg, globalPrefix);
+              break;
+            default:
+              msg.channel.send("`Type set -h for more information.`");
+          }
+
           break;
         }
         default: {
