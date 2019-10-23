@@ -1,6 +1,9 @@
 version: 2
 jobs:
-  build:
+  build-staging:
+    branches:
+      only:
+        - develop
     docker:
       - image: circleci/node:12.10.0
         environment:
@@ -43,7 +46,10 @@ jobs:
             docker build -f Dockerfile.staging -t amnrsln/turbot-staging:$TAG .
             docker login -u $DOCKER_USER -p $DOCKER_PASS
             docker push $DOCKER_USER/turbot-staging:$TAG
-  deploy:
+  deploy-staging:
+    branches:
+      only:
+        - develop
     machine:
       enabled: true
     steps:
@@ -72,6 +78,3 @@ workflows:
       - deploy:
           requires:
             - build
-          filters:
-            branches:
-              only: develop
