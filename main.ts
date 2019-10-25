@@ -27,7 +27,8 @@ require("dotenv").config();
 Amplify.default.configure({
   aws_appsync_graphqlEndpoint: process.env.AWS_APPSYNC_GRAPHQLENDPOINT,
   aws_appsync_region: process.env.AWS_APPSYNC_REGION,
-  aws_appsync_authenticationType: "AWS_IAM",
+  aws_appsync_authenticationType: "API_KEY",
+  aws_appsync_apiKey: process.env.AWS_APPSYNC_API_KEY,
 });
 
 const isDevMode: boolean = process.env.NODE_ENV !== "production";
@@ -45,29 +46,33 @@ const client: any = new Discord.Client();
 let customCommands = [];
 
 client.on("ready", async () => {
-  console.log(`
-  Bot is in ${process.env.NODE_ENV} mode.
-  Logged in as ${client.user.tag}!
-  `);
-  // cleverClient.setNick(`${client.user.tag}`);
-  client.user.setActivity(
-    isDevMode
-      ? `>[DEV MODE] | ${[...client.guilds].length} servers`
-      : `>help for commands. | Beta Build | ${
-          [...client.guilds].length
-        } servers`
-  );
+  try {
+    console.log(`
+    Bot is in ${process.env.NODE_ENV} mode.
+    Logged in as ${client.user.tag}!
+    `);
+    // cleverClient.setNick(`${client.user.tag}`);
+    client.user.setActivity(
+      isDevMode
+        ? `>[DEV MODE] | ${[...client.guilds].length} servers`
+        : `>help for commands. | Beta Build | ${
+            [...client.guilds].length
+          } servers`
+    );
 
-  const { data } = await Amplify.API.graphql(
-    Amplify.graphqlOperation(listGuildBots)
-  );
+    const { data } = await Amplify.API.graphql(
+      Amplify.graphqlOperation(listGuildBots)
+    );
 
-  data.listGuildBots.items.map(guildBot => {
-    globalPrefix[guildBot.id] = guildBot.prefix;
-  });
+    data.listGuildBots.items.map(guildBot => {
+      globalPrefix[guildBot.id] = guildBot.prefix;
+    });
 
-  console.log("Setting global prefix");
-  console.log(globalPrefix);
+    console.log("Setting global prefix");
+    console.log(globalPrefix);
+  } catch (err) {
+    console.log("Error on client ready", err);
+  }
 });
 
 // When Cheese gets invited into a new Guild
