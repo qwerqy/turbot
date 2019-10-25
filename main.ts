@@ -12,16 +12,17 @@ import {
   deleteCommand,
   listCommands,
 } from "./lib/graphql";
-// import Cleverbot = require("cleverbot.io");
-import Amplify = require("aws-amplify");
-import Discord = require("discord.js");
+import * as Amplify from "aws-amplify";
+import * as Discord from "discord.js";
 import {
   createHelpEmbed,
   createMemeEmbed,
   createStatusEmbed,
 } from "./lib/commands";
 // @ts-ignore
+// tslint:disable-next-line: no-var-requires
 global.WebSocket = require("ws");
+// tslint:disable-next-line: no-var-requires
 require("dotenv").config();
 
 Amplify.default.configure({
@@ -64,7 +65,7 @@ client.on("ready", async () => {
       Amplify.graphqlOperation(listGuildBots)
     );
 
-    data.listGuildBots.items.map(guildBot => {
+    data.listGuildBots.items.map((guildBot: IGuildBot) => {
       globalPrefix[guildBot.id] = guildBot.prefix;
     });
 
@@ -76,7 +77,7 @@ client.on("ready", async () => {
 });
 
 // When Cheese gets invited into a new Guild
-client.on("guildCreate", async guild => {
+client.on("guildCreate", async (guild: Discord.Guild) => {
   try {
     // Add initial command to database
     const newGuildBot = {
@@ -104,7 +105,7 @@ client.on("guildCreate", async guild => {
       Amplify.graphqlOperation(listGuildBots)
     );
 
-    data.listGuildBots.items.map(guildBot => {
+    data.listGuildBots.items.map((guildBot: IGuildBot) => {
       // Set Global Prefix
       globalPrefix[guildBot.id] = guildBot.prefix;
     });
@@ -115,15 +116,15 @@ client.on("guildCreate", async guild => {
   }
 });
 
-client.on("guildDelete", async guild => {
+client.on("guildDelete", async (guild: Discord.Guild) => {
   try {
     const allCommands = await Amplify.API.graphql(
       Amplify.graphqlOperation(listCommands)
     );
 
     allCommands.data.listCommands.items
-      .filter(command => command.guildBot.id === guild.id)
-      .map(async command => {
+      .filter((command: ICommand) => command.guildBot.id === guild.id)
+      .map(async (command: ICommand) => {
         await Amplify.API.graphql(
           Amplify.graphqlOperation(deleteCommand, {
             input: { id: command.id },
@@ -140,7 +141,7 @@ client.on("guildDelete", async guild => {
   }
 });
 
-client.on("message", async msg => {
+client.on("message", async (msg: Discord.Message) => {
   try {
     // Disable communications with other bots.
     if (msg.author.bot) {
@@ -158,9 +159,11 @@ client.on("message", async msg => {
       next: guildBotData => {
         delete globalPrefix[msg.guild.id];
 
-        guildBotData.value.data.onDeleteGuildBot.commands.items.map(command => {
-          customCommands.filter(c => c.id !== command.id);
-        });
+        guildBotData.value.data.onDeleteGuildBot.commands.items.map(
+          (command: ICommand) => {
+            customCommands.filter((c: ICustomCommand) => c.id !== command.id);
+          }
+        );
       },
     });
 
@@ -233,7 +236,7 @@ client.on("message", async msg => {
         }
         default: {
           if (data) {
-            customCommands.map(command => {
+            customCommands.map((command: ICustomCommand) => {
               if (command.cmd === cmd) {
                 msg.reply(command.message);
               }
