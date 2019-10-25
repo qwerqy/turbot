@@ -28,7 +28,7 @@ Amplify.default.configure({
   aws_appsync_graphqlEndpoint: process.env.AWS_APPSYNC_GRAPHQLENDPOINT,
   aws_appsync_region: process.env.AWS_APPSYNC_REGION,
   aws_appsync_authenticationType: "API_KEY",
-  aws_appsync_apiKey: process.env.AWS_APPSYNC_API_KEY,
+  aws_appsync_apiKey: process.env.AWS_APPSYNC_APIKEY,
 });
 
 const isDevMode: boolean = process.env.NODE_ENV !== "production";
