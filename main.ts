@@ -1,16 +1,11 @@
 import {
-  createGuildBot,
   getGuildBot,
   listGuildBots,
-  deleteGuildBot,
-  createCommand,
   onCreateCommand,
   onUpdateCommand,
   onDeleteCommand,
   onUpdateGuildBot,
   onDeleteGuildBot,
-  deleteCommand,
-  listCommands,
 } from "./lib/graphql";
 import * as Amplify from "aws-amplify";
 import * as Discord from "discord.js";
