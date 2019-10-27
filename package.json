@@ -6,9 +6,9 @@
   "private": true,
   "scripts": {
     "tsc": "tsc",
-    "start:prod": "NODE_ENV=production pm2 start .build/main.js",
-    "start:stage": "NODE_ENV=staging pm2 start .build/main.js",
-    "dev": "NODE_ENV=local ts-node-dev --respawn --transpileOnly main.ts"
+    "start:prod": "NODE_ENV=production pm2 start .build/index.js",
+    "start:stage": "NODE_ENV=staging pm2 start .build/index.js",
+    "dev": "NODE_ENV=local ts-node-dev --respawn --transpileOnly index.ts"
   },
   "keywords": [],
   "author": "Amin Roslan",
@@ -18,6 +18,7 @@
     "@babel/core": "^7.4.0",
     "@babel/node": "^7.2.2",
     "@babel/preset-env": "^7.4.2",
+    "@sentry/node": "^5.7.1",
     "@types/node": "^11.12.1",
     "aws-amplify": "^1.2.2",
     "aws-sdk": "^2.556.0",
@@ -31,6 +32,7 @@
     "ws": "^3.3.3"
   },
   "devDependencies": {
+    "@types/dotenv": "^6.1.1",
     "@types/node-fetch": "^2.3.0"
   }
 }
