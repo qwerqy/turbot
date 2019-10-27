@@ -55,7 +55,7 @@ jobs:
             docker pull amnrsln/turbot-staging:0.1.${CIRCLE_SHA1} && \
             docker stop turbot-staging || true && docker rm turbot-staging || true && \
             docker run --name turbot-staging -d \
-            -p 8080:8080 \
+            -p 80:80 \
             --restart=unless-stopped \
             -e DISCORD_BOT_TOKEN=$DISCORD_BOT_TOKEN_STAGING \
             -e AWS_APPSYNC_APIKEY=$AWS_APPSYNC_API_KEY_STAGING \

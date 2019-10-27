@@ -21,7 +21,7 @@ import createNewGuild from "./lib/createNewGuild";
 import deleteGuild from "./lib/deleteGuild";
 import WebSocket = require("ws");
 
-const wss = new WebSocket.Server({ port: 8080 });
+const wss = new WebSocket.Server({ port: 80 });
 
 wss.on("connection", function connection(ws) {
   // @ts-ignore
