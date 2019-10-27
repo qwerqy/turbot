@@ -20,8 +20,15 @@ import * as Sentry from "@sentry/node";
 import createNewGuild from "./lib/createNewGuild";
 import deleteGuild from "./lib/deleteGuild";
 import WebSocket = require("ws");
+import https from "https";
+import fs from "fs";
 
-const wss = new WebSocket.Server({ port: 80 });
+const server = https.createServer({
+  key: fs.readFileSync("key.pem"),
+  cert: fs.readFileSync("cert.pem"),
+});
+
+const wss = new WebSocket.Server({ server });
 
 wss.on("connection", function connection(ws) {
   // @ts-ignore
@@ -233,3 +240,5 @@ client.on("message", async (msg: Discord.Message) => {
 });
 
 client.login(process.env.DISCORD_BOT_TOKEN);
+
+server.listen(8080);
