@@ -9,4 +9,4 @@ RUN npm install
 
 RUN npm run tsc
 EXPOSE 8080
-CMD [ "node", ".build/main.js" ]
+CMD [ "node", ".build/index.js" ]
