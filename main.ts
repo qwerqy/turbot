@@ -24,8 +24,8 @@ import https from "https";
 import fs from "fs";
 
 const server = https.createServer({
-  key: fs.readFileSync("key.pem"),
-  cert: fs.readFileSync("cert.pem"),
+  key: fs.readFileSync("/etc/ssl/key.pem"),
+  cert: fs.readFileSync("/etc/ssl/cert.pem"),
 });
 
 const wss = new WebSocket.Server({ server });
