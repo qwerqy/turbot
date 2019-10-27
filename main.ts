@@ -24,6 +24,36 @@ import { isDevMode } from "./lib/utilities";
 import * as Sentry from "@sentry/node";
 import createNewGuild from "./lib/createNewGuild";
 import deleteGuild from "./lib/deleteGuild";
+import WebSocket = require("ws");
+
+const wss = new WebSocket.Server({ port: 8080 });
+
+wss.on("connection", function connection(ws) {
+  // @ts-ignore
+  console.log(`Connected to client ${ws._socket.remoteAddress}`);
+  ws.on("message", function incoming(message) {
+    console.log("received: %s", message);
+  });
+
+  ws.on("close", () => console.log("Connection closed"));
+
+  ws.on("error", err => {
+    // @ts-ignore
+    switch (err.code) {
+      case "ECONNRESET": {
+        break;
+      }
+      default:
+        console.log(err);
+    }
+  });
+});
+
+wss.on("error", error => console.log("WSS Error: ", error));
+
+wss.on("close", () => {
+  console.log("close");
+});
 
 Amplify.default.configure(config);
 
