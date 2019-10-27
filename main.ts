@@ -1,48 +1,63 @@
 import {
-  createGuildBot,
   getGuildBot,
   listGuildBots,
-  deleteGuildBot,
-  createCommand,
   onCreateCommand,
   onUpdateCommand,
   onDeleteCommand,
   onUpdateGuildBot,
   onDeleteGuildBot,
-  deleteCommand,
-  listCommands,
 } from "./lib/graphql";
-// import Cleverbot = require("cleverbot.io");
-import Amplify = require("aws-amplify");
-import Discord = require("discord.js");
+import * as Amplify from "aws-amplify";
+import * as Discord from "discord.js";
 import {
   createHelpEmbed,
   createMemeEmbed,
   createStatusEmbed,
 } from "./lib/commands";
-// @ts-ignore
-global.WebSocket = require("ws");
-require("dotenv").config();
+import config from "./amplify-config";
+import { isDevMode } from "./lib/utilities";
+import * as Sentry from "@sentry/node";
+import createNewGuild from "./lib/createNewGuild";
+import deleteGuild from "./lib/deleteGuild";
+import WebSocket = require("ws");
 
-Amplify.default.configure({
-  aws_appsync_graphqlEndpoint: process.env.AWS_APPSYNC_GRAPHQLENDPOINT,
-  aws_appsync_region: process.env.AWS_APPSYNC_REGION,
-  aws_appsync_authenticationType: "API_KEY",
-  aws_appsync_apiKey: process.env.AWS_APPSYNC_APIKEY,
+const wss = new WebSocket.Server({ port: 8080 });
+
+wss.on("connection", function connection(ws) {
+  // @ts-ignore
+  console.log(`Connected to client ${ws._socket.remoteAddress}`);
+  ws.on("message", function incoming(message) {
+    console.log("received: %s", message);
+  });
+
+  ws.on("close", () => console.log("Connection closed"));
+
+  ws.on("error", err => {
+    // @ts-ignore
+    switch (err.code) {
+      case "ECONNRESET": {
+        break;
+      }
+      default:
+        console.log(err);
+    }
+  });
 });
 
-const isDevMode: boolean = process.env.NODE_ENV !== "production";
-// const botId: number = isDevMode ? 546301684192641024 : 546239335238860827;
+wss.on("error", error => console.log("WSS Error: ", error));
 
-const globalPrefix: GPObject = {};
+wss.on("close", () => {
+  console.log("close");
+});
+
+Amplify.default.configure(config);
 
 // creates Client instance
 const client: any = new Discord.Client();
-// const cleverClient: any = new Cleverbot(
-//   process.env.CLEVERBOT_USER,
-//   process.env.CLEVERBOT_KEY
-// );
 
+// Guild prefix list state
+const globalPrefix: GPObject = {};
+// Custom commands list state
 let customCommands = [];
 
 client.on("ready", async () => {
@@ -51,7 +66,6 @@ client.on("ready", async () => {
     Bot is in ${process.env.NODE_ENV} mode.
     Logged in as ${client.user.tag}!
     `);
-    // cleverClient.setNick(`${client.user.tag}`);
     client.user.setActivity(
       isDevMode
         ? `>[DEV MODE] | ${[...client.guilds].length} servers`
@@ -60,87 +74,56 @@ client.on("ready", async () => {
           } servers`
     );
 
+    // Checks if there is any missing guildBot document in database by comparing with client's guilds.
+    client.guilds.map(async guild => {
+      const { data: guildData } = await Amplify.API.graphql(
+        Amplify.graphqlOperation(getGuildBot, { id: guild.id })
+      );
+      // If there is a mising guild, it will be added into database
+      if (!guildData.getGuildBot) {
+        await createNewGuild(guild, globalPrefix);
+        console.log(`Guild ${guild.id} not found in database, creating now.`);
+      }
+    });
+
     const { data } = await Amplify.API.graphql(
       Amplify.graphqlOperation(listGuildBots)
     );
 
-    data.listGuildBots.items.map(guildBot => {
+    // Checks if there is any guilds in database that is not in client's guilds
+    data.listGuildBots.items.map(async (guildBot: IGuildBot) => {
+      const botExistsInClient = client.guilds.find(
+        guild => guild.id === guildBot.id
+      );
+      // If there is, continue to delete
+      if (!botExistsInClient) {
+        await deleteGuild(guildBot);
+        console.log(
+          `Unknown guild document detected. Deleting guild ${guildBot.id} from database`
+        );
+      }
       globalPrefix[guildBot.id] = guildBot.prefix;
     });
 
-    console.log("Setting global prefix");
-    console.log(globalPrefix);
+    console.log(`Setting global prefix\n
+    ${JSON.stringify(globalPrefix)}
+    `);
   } catch (err) {
     console.log("Error on client ready", err);
+    Sentry.captureException(err);
   }
 });
 
 // When Cheese gets invited into a new Guild
-client.on("guildCreate", async guild => {
-  try {
-    // Add initial command to database
-    const newGuildBot = {
-      id: guild.id,
-      prefix: ">",
-    };
-
-    const newCommand = {
-      commandGuildBotId: guild.id,
-      cmd: "ping",
-      message: "Pong!",
-    };
-
-    // Add new guild
-    await Amplify.API.graphql(
-      Amplify.graphqlOperation(createGuildBot, { input: newGuildBot })
-    );
-
-    // Add new command under guild
-    await Amplify.API.graphql(
-      Amplify.graphqlOperation(createCommand, { input: newCommand })
-    );
-
-    const { data } = await Amplify.API.graphql(
-      Amplify.graphqlOperation(listGuildBots)
-    );
-
-    data.listGuildBots.items.map(guildBot => {
-      // Set Global Prefix
-      globalPrefix[guildBot.id] = guildBot.prefix;
-    });
-
-    console.log(`Initial command set for guild ${guild.id}`);
-  } catch (err) {
-    console.log(`Error adding to guild ${guild.id}`, err);
-  }
+client.on("guildCreate", async (guild: Discord.Guild) => {
+  await createNewGuild(guild, globalPrefix);
 });
 
-client.on("guildDelete", async guild => {
-  try {
-    const allCommands = await Amplify.API.graphql(
-      Amplify.graphqlOperation(listCommands)
-    );
-
-    allCommands.data.listCommands.items
-      .filter(command => command.guildBot.id === guild.id)
-      .map(async command => {
-        await Amplify.API.graphql(
-          Amplify.graphqlOperation(deleteCommand, {
-            input: { id: command.id },
-          })
-        );
-      });
-
-    await Amplify.API.graphql(
-      Amplify.graphqlOperation(deleteGuildBot, { input: { id: guild.id } })
-    );
-    console.log(`Guild ${guild.id} removed from database.`);
-  } catch (err) {
-    console.log("Error deleting guild: ", err);
-  }
+client.on("guildDelete", async (guild: Discord.Guild) => {
+  await deleteGuild(guild);
 });
 
-client.on("message", async msg => {
+client.on("message", async (msg: Discord.Message) => {
   try {
     // Disable communications with other bots.
     if (msg.author.bot) {
@@ -157,10 +140,11 @@ client.on("message", async msg => {
     Amplify.API.graphql(Amplify.graphqlOperation(onDeleteGuildBot)).subscribe({
       next: guildBotData => {
         delete globalPrefix[msg.guild.id];
-
-        guildBotData.value.data.onDeleteGuildBot.commands.items.map(command => {
-          customCommands.filter(c => c.id !== command.id);
-        });
+        guildBotData.value.data.onDeleteGuildBot.commands.items.map(
+          (command: ICommand) => {
+            customCommands.filter((c: ICustomCommand) => c.id !== command.id);
+          }
+        );
       },
     });
 
@@ -233,7 +217,7 @@ client.on("message", async msg => {
         }
         default: {
           if (data) {
-            customCommands.map(command => {
+            customCommands.map((command: ICustomCommand) => {
               if (command.cmd === cmd) {
                 msg.reply(command.message);
               }
@@ -244,6 +228,7 @@ client.on("message", async msg => {
     }
   } catch (err) {
     console.log(`Error on message for guild ${msg.guild.id}`, err);
+    Sentry.captureException(err);
   }
 });
 
