@@ -2,10 +2,18 @@ FROM node:10-alpine
 ENV NODE_ENV staging
 
 RUN mkdir -p /usr/src/app
+
 WORKDIR /usr/src/app
 COPY . .
 
-RUN npm install
+RUN apk add --no-cache --virtual .gyp \
+    python \
+    make \
+    g++ \
+    && npm install \
+    && apk del .gyp
+
+ENV PATH="/usr/src/app/node_modules/ffmpeg-static/bin/linux/x64:${PATH}"
 
 RUN npm run tsc
 EXPOSE 8080

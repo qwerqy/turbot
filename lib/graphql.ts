@@ -38,6 +38,13 @@ export const getGuildBot = `query GetGuildBot($id: ID!) {
       }
       nextToken
     }
+    plugins {
+      items {
+        id
+        name
+      }
+      nextToken
+    }
   }
 }
 `;
@@ -53,6 +60,9 @@ export const listGuildBots = `query ListGuildBots(
       commands {
         nextToken
       }
+      plugins {
+        nextToken
+      }
     }
     nextToken
   }
@@ -65,6 +75,9 @@ export const getCommand = `query GetCommand($id: ID!) {
       id
       prefix
       commands {
+        nextToken
+      }
+      plugins {
         nextToken
       }
     }
@@ -92,8 +105,148 @@ export const listCommands = `query ListCommands(
   }
 }
 `;
+export const getPlugin = `query GetPlugin($id: ID!) {
+  getPlugin(id: $id) {
+    id
+    name
+    guildBot {
+      id
+      prefix
+      commands {
+        nextToken
+      }
+      plugins {
+        nextToken
+      }
+    }
+    commands {
+      items {
+        id
+        name
+        cmd
+      }
+      nextToken
+    }
+    settings {
+      items {
+        id
+        name
+        enabled
+      }
+      nextToken
+    }
+  }
+}
+`;
+export const listPlugins = `query ListPlugins(
+  $filter: ModelPluginFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listPlugins(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    items {
+      id
+      name
+      guildBot {
+        id
+        prefix
+      }
+      commands {
+        nextToken
+      }
+      settings {
+        nextToken
+      }
+    }
+    nextToken
+  }
+}
+`;
+export const getPluginCommand = `query GetPluginCommand($id: ID!) {
+  getPluginCommand(id: $id) {
+    id
+    name
+    plugin {
+      id
+      name
+      guildBot {
+        id
+        prefix
+      }
+      commands {
+        nextToken
+      }
+      settings {
+        nextToken
+      }
+    }
+    cmd
+  }
+}
+`;
+export const listPluginCommands = `query ListPluginCommands(
+  $filter: ModelPluginCommandFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listPluginCommands(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    items {
+      id
+      name
+      plugin {
+        id
+        name
+      }
+      cmd
+    }
+    nextToken
+  }
+}
+`;
+export const getPluginSetting = `query GetPluginSetting($id: ID!) {
+  getPluginSetting(id: $id) {
+    id
+    plugin {
+      id
+      name
+      guildBot {
+        id
+        prefix
+      }
+      commands {
+        nextToken
+      }
+      settings {
+        nextToken
+      }
+    }
+    name
+    enabled
+  }
+}
+`;
+export const listPluginSettings = `query ListPluginSettings(
+  $filter: ModelPluginSettingFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listPluginSettings(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    items {
+      id
+      plugin {
+        id
+        name
+      }
+      name
+      enabled
+    }
+    nextToken
+  }
+}
+`;
 
 // MUTATION
+
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
@@ -133,6 +286,13 @@ export const createGuildBot = `mutation CreateGuildBot($input: CreateGuildBotInp
       }
       nextToken
     }
+    plugins {
+      items {
+        id
+        name
+      }
+      nextToken
+    }
   }
 }
 `;
@@ -145,6 +305,13 @@ export const updateGuildBot = `mutation UpdateGuildBot($input: UpdateGuildBotInp
         id
         cmd
         message
+      }
+      nextToken
+    }
+    plugins {
+      items {
+        id
+        name
       }
       nextToken
     }
@@ -163,6 +330,13 @@ export const deleteGuildBot = `mutation DeleteGuildBot($input: DeleteGuildBotInp
       }
       nextToken
     }
+    plugins {
+      items {
+        id
+        name
+      }
+      nextToken
+    }
   }
 }
 `;
@@ -173,6 +347,9 @@ export const createCommand = `mutation CreateCommand($input: CreateCommandInput!
       id
       prefix
       commands {
+        nextToken
+      }
+      plugins {
         nextToken
       }
     }
@@ -190,6 +367,9 @@ export const updateCommand = `mutation UpdateCommand($input: UpdateCommandInput!
       commands {
         nextToken
       }
+      plugins {
+        nextToken
+      }
     }
     cmd
     message
@@ -205,14 +385,251 @@ export const deleteCommand = `mutation DeleteCommand($input: DeleteCommandInput!
       commands {
         nextToken
       }
+      plugins {
+        nextToken
+      }
     }
     cmd
     message
   }
 }
 `;
+export const createPlugin = `mutation CreatePlugin($input: CreatePluginInput!) {
+  createPlugin(input: $input) {
+    id
+    name
+    guildBot {
+      id
+      prefix
+      commands {
+        nextToken
+      }
+      plugins {
+        nextToken
+      }
+    }
+    commands {
+      items {
+        id
+        name
+        cmd
+      }
+      nextToken
+    }
+    settings {
+      items {
+        id
+        name
+        enabled
+      }
+      nextToken
+    }
+  }
+}
+`;
+export const updatePlugin = `mutation UpdatePlugin($input: UpdatePluginInput!) {
+  updatePlugin(input: $input) {
+    id
+    name
+    guildBot {
+      id
+      prefix
+      commands {
+        nextToken
+      }
+      plugins {
+        nextToken
+      }
+    }
+    commands {
+      items {
+        id
+        name
+        cmd
+      }
+      nextToken
+    }
+    settings {
+      items {
+        id
+        name
+        enabled
+      }
+      nextToken
+    }
+  }
+}
+`;
+export const deletePlugin = `mutation DeletePlugin($input: DeletePluginInput!) {
+  deletePlugin(input: $input) {
+    id
+    name
+    guildBot {
+      id
+      prefix
+      commands {
+        nextToken
+      }
+      plugins {
+        nextToken
+      }
+    }
+    commands {
+      items {
+        id
+        name
+        cmd
+      }
+      nextToken
+    }
+    settings {
+      items {
+        id
+        name
+        enabled
+      }
+      nextToken
+    }
+  }
+}
+`;
+export const createPluginCommand = `mutation CreatePluginCommand($input: CreatePluginCommandInput!) {
+  createPluginCommand(input: $input) {
+    id
+    name
+    plugin {
+      id
+      name
+      guildBot {
+        id
+        prefix
+      }
+      commands {
+        nextToken
+      }
+      settings {
+        nextToken
+      }
+    }
+    cmd
+  }
+}
+`;
+export const updatePluginCommand = `mutation UpdatePluginCommand($input: UpdatePluginCommandInput!) {
+  updatePluginCommand(input: $input) {
+    id
+    name
+    plugin {
+      id
+      name
+      guildBot {
+        id
+        prefix
+      }
+      commands {
+        nextToken
+      }
+      settings {
+        nextToken
+      }
+    }
+    cmd
+  }
+}
+`;
+export const deletePluginCommand = `mutation DeletePluginCommand($input: DeletePluginCommandInput!) {
+  deletePluginCommand(input: $input) {
+    id
+    name
+    plugin {
+      id
+      name
+      guildBot {
+        id
+        prefix
+      }
+      commands {
+        nextToken
+      }
+      settings {
+        nextToken
+      }
+    }
+    cmd
+  }
+}
+`;
+export const createPluginSetting = `mutation CreatePluginSetting($input: CreatePluginSettingInput!) {
+  createPluginSetting(input: $input) {
+    id
+    plugin {
+      id
+      name
+      guildBot {
+        id
+        prefix
+      }
+      commands {
+        nextToken
+      }
+      settings {
+        nextToken
+      }
+    }
+    name
+    enabled
+  }
+}
+`;
+export const updatePluginSetting = `mutation UpdatePluginSetting($input: UpdatePluginSettingInput!) {
+  updatePluginSetting(input: $input) {
+    id
+    plugin {
+      id
+      name
+      guildBot {
+        id
+        prefix
+      }
+      commands {
+        nextToken
+      }
+      settings {
+        nextToken
+      }
+    }
+    name
+    enabled
+  }
+}
+`;
+export const deletePluginSetting = `mutation DeletePluginSetting($input: DeletePluginSettingInput!) {
+  deletePluginSetting(input: $input) {
+    id
+    plugin {
+      id
+      name
+      guildBot {
+        id
+        prefix
+      }
+      commands {
+        nextToken
+      }
+      settings {
+        nextToken
+      }
+    }
+    name
+    enabled
+  }
+}
+`;
 
-// SUBSCRIPTIONS
+// SUBSCRIPTION
+
+/* eslint-disable */
+// this is an auto generated file. This will be overwritten
 
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
@@ -253,6 +670,13 @@ export const onCreateGuildBot = `subscription OnCreateGuildBot {
       }
       nextToken
     }
+    plugins {
+      items {
+        id
+        name
+      }
+      nextToken
+    }
   }
 }
 `;
@@ -265,6 +689,13 @@ export const onUpdateGuildBot = `subscription OnUpdateGuildBot {
         id
         cmd
         message
+      }
+      nextToken
+    }
+    plugins {
+      items {
+        id
+        name
       }
       nextToken
     }
@@ -283,6 +714,13 @@ export const onDeleteGuildBot = `subscription OnDeleteGuildBot {
       }
       nextToken
     }
+    plugins {
+      items {
+        id
+        name
+      }
+      nextToken
+    }
   }
 }
 `;
@@ -293,6 +731,9 @@ export const onCreateCommand = `subscription OnCreateCommand {
       id
       prefix
       commands {
+        nextToken
+      }
+      plugins {
         nextToken
       }
     }
@@ -310,6 +751,9 @@ export const onUpdateCommand = `subscription OnUpdateCommand {
       commands {
         nextToken
       }
+      plugins {
+        nextToken
+      }
     }
     cmd
     message
@@ -325,9 +769,243 @@ export const onDeleteCommand = `subscription OnDeleteCommand {
       commands {
         nextToken
       }
+      plugins {
+        nextToken
+      }
     }
     cmd
     message
+  }
+}
+`;
+export const onCreatePlugin = `subscription OnCreatePlugin {
+  onCreatePlugin {
+    id
+    name
+    guildBot {
+      id
+      prefix
+      commands {
+        nextToken
+      }
+      plugins {
+        nextToken
+      }
+    }
+    commands {
+      items {
+        id
+        name
+        cmd
+      }
+      nextToken
+    }
+    settings {
+      items {
+        id
+        name
+        enabled
+      }
+      nextToken
+    }
+  }
+}
+`;
+export const onUpdatePlugin = `subscription OnUpdatePlugin {
+  onUpdatePlugin {
+    id
+    name
+    guildBot {
+      id
+      prefix
+      commands {
+        nextToken
+      }
+      plugins {
+        nextToken
+      }
+    }
+    commands {
+      items {
+        id
+        name
+        cmd
+      }
+      nextToken
+    }
+    settings {
+      items {
+        id
+        name
+        enabled
+      }
+      nextToken
+    }
+  }
+}
+`;
+export const onDeletePlugin = `subscription OnDeletePlugin {
+  onDeletePlugin {
+    id
+    name
+    guildBot {
+      id
+      prefix
+      commands {
+        nextToken
+      }
+      plugins {
+        nextToken
+      }
+    }
+    commands {
+      items {
+        id
+        name
+        cmd
+      }
+      nextToken
+    }
+    settings {
+      items {
+        id
+        name
+        enabled
+      }
+      nextToken
+    }
+  }
+}
+`;
+export const onCreatePluginCommand = `subscription OnCreatePluginCommand {
+  onCreatePluginCommand {
+    id
+    name
+    plugin {
+      id
+      name
+      guildBot {
+        id
+        prefix
+      }
+      commands {
+        nextToken
+      }
+      settings {
+        nextToken
+      }
+    }
+    cmd
+  }
+}
+`;
+export const onUpdatePluginCommand = `subscription OnUpdatePluginCommand {
+  onUpdatePluginCommand {
+    id
+    name
+    plugin {
+      id
+      name
+      guildBot {
+        id
+        prefix
+      }
+      commands {
+        nextToken
+      }
+      settings {
+        nextToken
+      }
+    }
+    cmd
+  }
+}
+`;
+export const onDeletePluginCommand = `subscription OnDeletePluginCommand {
+  onDeletePluginCommand {
+    id
+    name
+    plugin {
+      id
+      name
+      guildBot {
+        id
+        prefix
+      }
+      commands {
+        nextToken
+      }
+      settings {
+        nextToken
+      }
+    }
+    cmd
+  }
+}
+`;
+export const onCreatePluginSetting = `subscription OnCreatePluginSetting {
+  onCreatePluginSetting {
+    id
+    plugin {
+      id
+      name
+      guildBot {
+        id
+        prefix
+      }
+      commands {
+        nextToken
+      }
+      settings {
+        nextToken
+      }
+    }
+    name
+    enabled
+  }
+}
+`;
+export const onUpdatePluginSetting = `subscription OnUpdatePluginSetting {
+  onUpdatePluginSetting {
+    id
+    plugin {
+      id
+      name
+      guildBot {
+        id
+        prefix
+      }
+      commands {
+        nextToken
+      }
+      settings {
+        nextToken
+      }
+    }
+    name
+    enabled
+  }
+}
+`;
+export const onDeletePluginSetting = `subscription OnDeletePluginSetting {
+  onDeletePluginSetting {
+    id
+    plugin {
+      id
+      name
+      guildBot {
+        id
+        prefix
+      }
+      commands {
+        nextToken
+      }
+      settings {
+        nextToken
+      }
+    }
+    name
+    enabled
   }
 }
 `;
