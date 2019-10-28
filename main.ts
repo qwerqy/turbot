@@ -6,6 +6,13 @@ import {
   onDeleteCommand,
   onUpdateGuildBot,
   onDeleteGuildBot,
+  onUpdatePlugin,
+  onCreatePlugin,
+  onDeletePlugin,
+  onCreatePluginCommand,
+  onUpdatePluginCommand,
+  onDeletePluginCommand,
+  listPluginCommands,
 } from "./lib/graphql";
 import * as Amplify from "aws-amplify";
 import * as Discord from "discord.js";
@@ -19,24 +26,22 @@ import { isDevMode } from "./lib/utilities";
 import * as Sentry from "@sentry/node";
 import createNewGuild from "./lib/createNewGuild";
 import deleteGuild from "./lib/deleteGuild";
+import updateGuild from "./lib/updateGuild";
 
 Amplify.default.configure(config);
 
 // creates Client instance
 const client: any = new Discord.Client();
 
+// Integrate music to Client instance
 client.music = require("discord.js-musicbot-addon");
-
-client.music.start(client, {
-  // Set the api key used for YouTube.
-  // This is required to run the bot.
-  youtubeKey: process.env.YOUTUBE_API_KEY,
-});
 
 // Guild prefix list state
 const globalPrefix: GPObject = {};
 // Custom commands list state
 let customCommands = [];
+// Plugins list state
+let plugins = [];
 
 client.on("ready", async () => {
   try {
@@ -62,6 +67,8 @@ client.on("ready", async () => {
         await createNewGuild(guild, globalPrefix);
         console.log(`Guild ${guild.id} not found in database, creating now.`);
       }
+
+      await updateGuild(guildData.getGuildBot);
     });
 
     const { data } = await Amplify.API.graphql(
@@ -90,6 +97,15 @@ client.on("ready", async () => {
     console.log("Error on client ready", err);
     Sentry.captureException(err);
   }
+});
+
+client.music.start(client, {
+  // Set the api key used for YouTube.
+  // This is required to run the bot.
+  youtubeKey: process.env.YOUTUBE_API_KEY,
+  help: {
+    exclude: true,
+  },
 });
 
 // When Cheese gets invited into a new Guild
@@ -139,7 +155,17 @@ client.on("message", async (msg: Discord.Message) => {
         })
       );
 
-      customCommands = [...data.getGuildBot.commands.items];
+      const { data: plList } = await Amplify.API.graphql(
+        Amplify.graphqlOperation(listPluginCommands)
+      );
+
+      customCommands = [...customCommands, ...data.getGuildBot.commands.items];
+
+      plugins = [...plugins, ...plList.listPluginCommands.items];
+
+      // ========
+      // COMMANDS
+      // ========
 
       Amplify.API.graphql(Amplify.graphqlOperation(onCreateCommand)).subscribe({
         next: commandData => {
@@ -167,12 +193,90 @@ client.on("message", async (msg: Discord.Message) => {
 
       Amplify.API.graphql(Amplify.graphqlOperation(onDeleteCommand)).subscribe({
         next: commandData => {
+          // TODO: Check this
           customCommands = [
             ...customCommands,
             commandData.value.data.onDeleteCommand,
           ];
           console.log(
             `Custom command deleted ${commandData.value.data.onDeleteCommand.id}`
+          );
+        },
+      });
+
+      // =======
+      // PLUGINS
+      // =======
+
+      Amplify.API.graphql(Amplify.graphqlOperation(onCreatePlugin)).subscribe({
+        next: pluginData => {
+          plugins = [...plugins, pluginData.value.data.onCreatePlugin];
+          console.log(
+            `New plugin added ${pluginData.value.data.onCreatePlugin.id}`
+          );
+        },
+      });
+
+      Amplify.API.graphql(Amplify.graphqlOperation(onUpdatePlugin)).subscribe({
+        next: pluginData => {
+          plugins = [...plugins, pluginData.value.data.onUpdatePlugin];
+          console.log(
+            `Plugin updated ${pluginData.value.data.onUpdatePlugin.id}`
+          );
+        },
+      });
+
+      Amplify.API.graphql(Amplify.graphqlOperation(onDeletePlugin)).subscribe({
+        next: pluginData => {
+          plugins = [...plugins, pluginData.value.data.onDeletePlugin];
+          console.log(
+            `Plugin deleted ${pluginData.value.data.onDeletePlugin.id}`
+          );
+        },
+      });
+
+      // =======
+      // PLUGINSCOMMAND
+      // =======
+
+      Amplify.API.graphql(
+        Amplify.graphqlOperation(onCreatePluginCommand)
+      ).subscribe({
+        next: pluginData => {
+          plugins = [
+            ...plugins,
+            pluginData.value.data.onCreatePluginCommand.plugin,
+          ];
+          console.log(
+            `New plugin command added ${pluginData.value.data.onCreatePluginCommand.id}`
+          );
+        },
+      });
+
+      Amplify.API.graphql(
+        Amplify.graphqlOperation(onUpdatePluginCommand)
+      ).subscribe({
+        next: pluginData => {
+          plugins = [
+            ...plugins,
+            pluginData.value.data.onUpdatePluginCommand.plugin,
+          ];
+          console.log(
+            `Plugin command updated ${pluginData.value.data.onUpdatePluginCommand.id}`
+          );
+        },
+      });
+
+      Amplify.API.graphql(
+        Amplify.graphqlOperation(onDeletePluginCommand)
+      ).subscribe({
+        next: pluginData => {
+          plugins = [
+            ...plugins,
+            pluginData.value.data.onDeletePluginCommand.plugin,
+          ];
+          console.log(
+            `Plugin command deleted ${pluginData.value.data.onDeletePluginCommand.id}`
           );
         },
       });
@@ -200,6 +304,60 @@ client.on("message", async (msg: Discord.Message) => {
                 msg.reply(command.message);
               }
             });
+
+            const musicPlugin = plugins.filter(
+              pluginC => pluginC.plugin && pluginC.plugin.name === "music"
+            );
+
+            if (musicPlugin) {
+              const action = musicPlugin.find(act => act.cmd === cmd) || {
+                name: "",
+              };
+              switch (action.name) {
+                case "play":
+                  client.music.bot.playFunction(msg, suffix); // PLAY command.
+                  break;
+                case "queue":
+                  client.music.bot.queueFunction(msg, suffix); // QUEUE command.
+                  break;
+                case "np":
+                  client.music.bot.npFunction(msg, suffix); // NOWPLAYING command.
+                  break;
+                case "loop":
+                  client.music.bot.loopFunction(msg, suffix); // LOOP command.
+                  break;
+                case "skip":
+                  client.music.bot.skipFunction(msg, suffix); // SKIP command.
+                  break;
+                case "pause":
+                  client.music.bot.pauseFunction(msg, suffix); // PAUSE command.
+                  break;
+                case "resume":
+                  client.music.bot.resumeFunction(msg, suffix); // RESUME command.
+                  break;
+                case "clear":
+                  client.music.bot.clearFunction(msg, suffix); // CLEARQUEUE command.
+                  break;
+                case "leave":
+                  client.music.bot.leaveFunction(msg, suffix); // LEAVE command.
+                  break;
+                case "search":
+                  client.music.bot.searchFunction(msg, suffix); // SEARCH command.
+                  break;
+                case "volume":
+                  client.music.bot.volumeFunction(msg, suffix); // VOLUME command.
+                  break;
+                case "remove":
+                  client.music.bot.removeFunction(msg, suffix); // REMOVE command.
+                  break;
+                default:
+                  msg.reply(
+                    `Sorry! Can't understand what you are trying to do..`
+                  );
+              }
+            } else {
+              msg.reply("Music bot is disabled");
+            }
           }
         }
       }
