@@ -1,8 +1,6 @@
 version: 2
 jobs:
-  build:
-    branches:
-      only: develop
+  build-staging:
     docker:
       - image: circleci/node:12.10.0
         environment:
@@ -45,9 +43,7 @@ jobs:
             docker build -f Dockerfile.staging -t amnrsln/turbot-staging:$TAG .
             docker login -u $DOCKER_USER -p $DOCKER_PASS
             docker push $DOCKER_USER/turbot-staging:$TAG
-  deploy:
-    branches:
-      only: develop
+  deploy-staging:
     machine:
       enabled: true
     steps:
@@ -66,14 +62,16 @@ jobs:
             -e AWS_APPSYNC_GRAPHQLENDPOINT=$AWS_APPSYNC_GRAPHQL_ENDPOINT_STAGING \
             -e AWS_APPSYNC_REGION=$AWS_APPSYNC_REGION_STAGING \
             -e TENOR_API_KEY=$TENOR_API_KEY \
-            -e YOUTUBE_API_KEY=$YOUTUBE_API_KEY_STAGING \
             amnrsln/turbot-staging:0.1.${CIRCLE_SHA1}"
 
 workflows:
   version: 2
-  build-and-deploy:
+  build-and-deploy-staging:
     jobs:
-      - build
-      - deploy:
+      - build-staging
+      - deploy-staging:
           requires:
-            - build
+            - build-staging
+          filters:
+            branches:
+              only: develop
