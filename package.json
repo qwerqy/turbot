@@ -25,8 +25,11 @@
     "axios": "^0.18.1",
     "cleverbot.io": "^1.0.4",
     "discord.js": "^11.5.1",
+    "discord.js-musicbot-addon": "^13.8.1",
     "dotenv": "^7.0.0",
+    "ffmpeg-static": "^2.7.0",
     "node-fetch": "^2.3.0",
+    "node-opus": "^0.3.3",
     "ts-node-dev": "^1.0.0-pre.43",
     "typescript": "^3.6.3",
     "ws": "^3.3.3"
