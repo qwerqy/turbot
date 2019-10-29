@@ -69,7 +69,10 @@ workflows:
   version: 2
   build-and-deploy-staging:
     jobs:
-      - build-staging
+      - build-staging:
+          filters:
+            branches:
+              only: develop
       - deploy-staging:
           requires:
             - build-staging
