@@ -12,7 +12,7 @@ import {
   onCreatePluginCommand,
   onUpdatePluginCommand,
   onDeletePluginCommand,
-  listPluginCommands,
+  getGuildBotTree,
 } from "./lib/graphql";
 import * as Amplify from "aws-amplify";
 import * as Discord from "discord.js";
@@ -144,7 +144,7 @@ client.on("message", async (msg: Discord.Message) => {
       },
     });
 
-    const symbol: string = globalPrefix[msg.guild.id] || ">";
+    const symbol: string = globalPrefix[msg.guild.id];
 
     if (msg.content.substring(0, 1) === symbol) {
       const args: string[] = msg.content.substring(1).split(" ");
@@ -152,18 +152,14 @@ client.on("message", async (msg: Discord.Message) => {
       const suffix: string = args.splice(1).join(" ");
 
       const { data } = await Amplify.API.graphql(
-        Amplify.graphqlOperation(getGuildBot, {
+        Amplify.graphqlOperation(getGuildBotTree, {
           id: msg.guild.id,
         })
       );
 
-      const { data: plList } = await Amplify.API.graphql(
-        Amplify.graphqlOperation(listPluginCommands, { limit: 1000 })
-      );
+      customCommands = [...data.getGuildBot.commands.items];
 
-      customCommands = [...customCommands, ...data.getGuildBot.commands.items];
-
-      plugins = [...plugins, ...plList.listPluginCommands.items];
+      plugins = [...data.getGuildBot.plugins.items];
 
       switch (cmd) {
         case "status":
@@ -190,12 +186,22 @@ client.on("message", async (msg: Discord.Message) => {
               return;
             });
 
-            const musicPlugin = plugins.filter(
-              pluginC => pluginC.plugin && pluginC.plugin.name === "music"
+            const musicPlugin = plugins.find(
+              pluginC => pluginC.name === "music"
             );
 
-            if (musicPlugin) {
-              const action = musicPlugin.find(act => act.cmd === cmd);
+            const action = musicPlugin.commands.items.find(
+              command => command.cmd === cmd
+            );
+
+            if (action) {
+              client.music.bot.commands.set(action.name, {
+                ...client.music.bot.commands.get(action.name),
+                enabled: musicPlugin.enabled,
+              });
+            }
+
+            if (musicPlugin && musicPlugin.enabled) {
               if (action) {
                 switch (action.name) {
                   case "play":
@@ -242,12 +248,15 @@ client.on("message", async (msg: Discord.Message) => {
                 return;
               }
             } else {
-              msg.reply("Music bot is disabled");
+              msg.reply("Music feature is disabled.");
+              return;
             }
           }
+          return;
         }
       }
     }
+    return;
   } catch (err) {
     console.log(`Error on message for guild ${msg.guild.id}`, err);
     Sentry.captureException(err);
