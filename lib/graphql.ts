@@ -42,6 +42,7 @@ export const getGuildBot = `query GetGuildBot($id: ID!) {
       items {
         id
         name
+        enabled
       }
       nextToken
     }
@@ -109,6 +110,7 @@ export const getPlugin = `query GetPlugin($id: ID!) {
   getPlugin(id: $id) {
     id
     name
+    enabled
     guildBot {
       id
       prefix
@@ -147,6 +149,7 @@ export const listPlugins = `query ListPlugins(
     items {
       id
       name
+      enabled
       guildBot {
         id
         prefix
@@ -169,6 +172,7 @@ export const getPluginCommand = `query GetPluginCommand($id: ID!) {
     plugin {
       id
       name
+      enabled
       guildBot {
         id
         prefix
@@ -196,6 +200,7 @@ export const listPluginCommands = `query ListPluginCommands(
       plugin {
         id
         name
+        enabled
       }
       cmd
     }
@@ -209,6 +214,7 @@ export const getPluginSetting = `query GetPluginSetting($id: ID!) {
     plugin {
       id
       name
+      enabled
       guildBot {
         id
         prefix
@@ -236,6 +242,7 @@ export const listPluginSettings = `query ListPluginSettings(
       plugin {
         id
         name
+        enabled
       }
       name
       enabled
@@ -244,6 +251,43 @@ export const listPluginSettings = `query ListPluginSettings(
   }
 }
 `;
+
+export const getGuildBotTree = `query GetGuildBot($id: ID!) {
+  getGuildBot(id: $id) {
+    id
+    prefix
+    commands {
+      items {
+        id
+        cmd
+        message
+      }
+      nextToken
+    }
+    plugins {
+      items {
+        id
+        name
+        enabled
+        commands {
+          items {
+            id
+            name
+            cmd
+          }
+        }
+        settings {
+          items {
+            id
+            name
+            enabled
+          }
+        }
+      }
+      nextToken
+    }
+  }
+}`;
 
 // MUTATION
 
@@ -290,6 +334,7 @@ export const createGuildBot = `mutation CreateGuildBot($input: CreateGuildBotInp
       items {
         id
         name
+        enabled
       }
       nextToken
     }
@@ -312,6 +357,7 @@ export const updateGuildBot = `mutation UpdateGuildBot($input: UpdateGuildBotInp
       items {
         id
         name
+        enabled
       }
       nextToken
     }
@@ -334,6 +380,7 @@ export const deleteGuildBot = `mutation DeleteGuildBot($input: DeleteGuildBotInp
       items {
         id
         name
+        enabled
       }
       nextToken
     }
@@ -398,6 +445,7 @@ export const createPlugin = `mutation CreatePlugin($input: CreatePluginInput!) {
   createPlugin(input: $input) {
     id
     name
+    enabled
     guildBot {
       id
       prefix
@@ -431,6 +479,7 @@ export const updatePlugin = `mutation UpdatePlugin($input: UpdatePluginInput!) {
   updatePlugin(input: $input) {
     id
     name
+    enabled
     guildBot {
       id
       prefix
@@ -464,6 +513,7 @@ export const deletePlugin = `mutation DeletePlugin($input: DeletePluginInput!) {
   deletePlugin(input: $input) {
     id
     name
+    enabled
     guildBot {
       id
       prefix
@@ -500,6 +550,7 @@ export const createPluginCommand = `mutation CreatePluginCommand($input: CreateP
     plugin {
       id
       name
+      enabled
       guildBot {
         id
         prefix
@@ -522,6 +573,7 @@ export const updatePluginCommand = `mutation UpdatePluginCommand($input: UpdateP
     plugin {
       id
       name
+      enabled
       guildBot {
         id
         prefix
@@ -544,6 +596,7 @@ export const deletePluginCommand = `mutation DeletePluginCommand($input: DeleteP
     plugin {
       id
       name
+      enabled
       guildBot {
         id
         prefix
@@ -565,6 +618,7 @@ export const createPluginSetting = `mutation CreatePluginSetting($input: CreateP
     plugin {
       id
       name
+      enabled
       guildBot {
         id
         prefix
@@ -587,6 +641,7 @@ export const updatePluginSetting = `mutation UpdatePluginSetting($input: UpdateP
     plugin {
       id
       name
+      enabled
       guildBot {
         id
         prefix
@@ -609,6 +664,7 @@ export const deletePluginSetting = `mutation DeletePluginSetting($input: DeleteP
     plugin {
       id
       name
+      enabled
       guildBot {
         id
         prefix
@@ -627,9 +683,6 @@ export const deletePluginSetting = `mutation DeletePluginSetting($input: DeleteP
 `;
 
 // SUBSCRIPTION
-
-/* eslint-disable */
-// this is an auto generated file. This will be overwritten
 
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
@@ -674,6 +727,7 @@ export const onCreateGuildBot = `subscription OnCreateGuildBot {
       items {
         id
         name
+        enabled
       }
       nextToken
     }
@@ -696,6 +750,7 @@ export const onUpdateGuildBot = `subscription OnUpdateGuildBot {
       items {
         id
         name
+        enabled
       }
       nextToken
     }
@@ -718,6 +773,7 @@ export const onDeleteGuildBot = `subscription OnDeleteGuildBot {
       items {
         id
         name
+        enabled
       }
       nextToken
     }
@@ -782,6 +838,7 @@ export const onCreatePlugin = `subscription OnCreatePlugin {
   onCreatePlugin {
     id
     name
+    enabled
     guildBot {
       id
       prefix
@@ -815,6 +872,7 @@ export const onUpdatePlugin = `subscription OnUpdatePlugin {
   onUpdatePlugin {
     id
     name
+    enabled
     guildBot {
       id
       prefix
@@ -848,6 +906,7 @@ export const onDeletePlugin = `subscription OnDeletePlugin {
   onDeletePlugin {
     id
     name
+    enabled
     guildBot {
       id
       prefix
@@ -884,6 +943,7 @@ export const onCreatePluginCommand = `subscription OnCreatePluginCommand {
     plugin {
       id
       name
+      enabled
       guildBot {
         id
         prefix
@@ -906,6 +966,7 @@ export const onUpdatePluginCommand = `subscription OnUpdatePluginCommand {
     plugin {
       id
       name
+      enabled
       guildBot {
         id
         prefix
@@ -928,6 +989,7 @@ export const onDeletePluginCommand = `subscription OnDeletePluginCommand {
     plugin {
       id
       name
+      enabled
       guildBot {
         id
         prefix
@@ -949,6 +1011,7 @@ export const onCreatePluginSetting = `subscription OnCreatePluginSetting {
     plugin {
       id
       name
+      enabled
       guildBot {
         id
         prefix
@@ -971,6 +1034,7 @@ export const onUpdatePluginSetting = `subscription OnUpdatePluginSetting {
     plugin {
       id
       name
+      enabled
       guildBot {
         id
         prefix
@@ -993,6 +1057,7 @@ export const onDeletePluginSetting = `subscription OnDeletePluginSetting {
     plugin {
       id
       name
+      enabled
       guildBot {
         id
         prefix

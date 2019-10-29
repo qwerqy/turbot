@@ -8,7 +8,8 @@
     "object-literal-sort-keys": false,
     "trailing-comma": false,
     "arrow-parens": false,
-    "no-var-requires": false
+    "no-var-requires": false,
+    "variable-name": false
   },
   "rulesDirectory": []
 }

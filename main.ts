@@ -12,7 +12,7 @@ import {
   onCreatePluginCommand,
   onUpdatePluginCommand,
   onDeletePluginCommand,
-  listPluginCommands,
+  getGuildBotTree,
 } from "./lib/graphql";
 import * as Amplify from "aws-amplify";
 import * as Discord from "discord.js";
@@ -93,6 +93,8 @@ client.on("ready", async () => {
     console.log(`Setting global prefix\n
     ${JSON.stringify(globalPrefix)}
     `);
+
+    updateListener();
   } catch (err) {
     console.log("Error on client ready", err);
     Sentry.captureException(err);
@@ -142,7 +144,7 @@ client.on("message", async (msg: Discord.Message) => {
       },
     });
 
-    const symbol: string = globalPrefix[msg.guild.id] || ">";
+    const symbol: string = globalPrefix[msg.guild.id];
 
     if (msg.content.substring(0, 1) === symbol) {
       const args: string[] = msg.content.substring(1).split(" ");
@@ -150,136 +152,14 @@ client.on("message", async (msg: Discord.Message) => {
       const suffix: string = args.splice(1).join(" ");
 
       const { data } = await Amplify.API.graphql(
-        Amplify.graphqlOperation(getGuildBot, {
+        Amplify.graphqlOperation(getGuildBotTree, {
           id: msg.guild.id,
         })
       );
 
-      const { data: plList } = await Amplify.API.graphql(
-        Amplify.graphqlOperation(listPluginCommands)
-      );
+      customCommands = [...data.getGuildBot.commands.items];
 
-      customCommands = [...customCommands, ...data.getGuildBot.commands.items];
-
-      plugins = [...plugins, ...plList.listPluginCommands.items];
-
-      // ========
-      // COMMANDS
-      // ========
-
-      Amplify.API.graphql(Amplify.graphqlOperation(onCreateCommand)).subscribe({
-        next: commandData => {
-          customCommands = [
-            ...customCommands,
-            commandData.value.data.onCreateCommand,
-          ];
-          console.log(
-            `New custom command added ${commandData.value.data.onCreateCommand.id}`
-          );
-        },
-      });
-
-      Amplify.API.graphql(Amplify.graphqlOperation(onUpdateCommand)).subscribe({
-        next: commandData => {
-          customCommands = [
-            ...customCommands,
-            commandData.value.data.onUpdateCommand,
-          ];
-          console.log(
-            `Custom command updated ${commandData.value.data.onUpdateCommand.id}`
-          );
-        },
-      });
-
-      Amplify.API.graphql(Amplify.graphqlOperation(onDeleteCommand)).subscribe({
-        next: commandData => {
-          // TODO: Check this
-          customCommands = [
-            ...customCommands,
-            commandData.value.data.onDeleteCommand,
-          ];
-          console.log(
-            `Custom command deleted ${commandData.value.data.onDeleteCommand.id}`
-          );
-        },
-      });
-
-      // =======
-      // PLUGINS
-      // =======
-
-      Amplify.API.graphql(Amplify.graphqlOperation(onCreatePlugin)).subscribe({
-        next: pluginData => {
-          plugins = [...plugins, pluginData.value.data.onCreatePlugin];
-          console.log(
-            `New plugin added ${pluginData.value.data.onCreatePlugin.id}`
-          );
-        },
-      });
-
-      Amplify.API.graphql(Amplify.graphqlOperation(onUpdatePlugin)).subscribe({
-        next: pluginData => {
-          plugins = [...plugins, pluginData.value.data.onUpdatePlugin];
-          console.log(
-            `Plugin updated ${pluginData.value.data.onUpdatePlugin.id}`
-          );
-        },
-      });
-
-      Amplify.API.graphql(Amplify.graphqlOperation(onDeletePlugin)).subscribe({
-        next: pluginData => {
-          plugins = [...plugins, pluginData.value.data.onDeletePlugin];
-          console.log(
-            `Plugin deleted ${pluginData.value.data.onDeletePlugin.id}`
-          );
-        },
-      });
-
-      // =======
-      // PLUGINSCOMMAND
-      // =======
-
-      Amplify.API.graphql(
-        Amplify.graphqlOperation(onCreatePluginCommand)
-      ).subscribe({
-        next: pluginData => {
-          plugins = [
-            ...plugins,
-            pluginData.value.data.onCreatePluginCommand.plugin,
-          ];
-          console.log(
-            `New plugin command added ${pluginData.value.data.onCreatePluginCommand.id}`
-          );
-        },
-      });
-
-      Amplify.API.graphql(
-        Amplify.graphqlOperation(onUpdatePluginCommand)
-      ).subscribe({
-        next: pluginData => {
-          plugins = [
-            ...plugins,
-            pluginData.value.data.onUpdatePluginCommand.plugin,
-          ];
-          console.log(
-            `Plugin command updated ${pluginData.value.data.onUpdatePluginCommand.id}`
-          );
-        },
-      });
-
-      Amplify.API.graphql(
-        Amplify.graphqlOperation(onDeletePluginCommand)
-      ).subscribe({
-        next: pluginData => {
-          plugins = [
-            ...plugins,
-            pluginData.value.data.onDeletePluginCommand.plugin,
-          ];
-          console.log(
-            `Plugin command deleted ${pluginData.value.data.onDeletePluginCommand.id}`
-          );
-        },
-      });
+      plugins = [...data.getGuildBot.plugins.items];
 
       switch (cmd) {
         case "status":
@@ -303,65 +183,80 @@ client.on("message", async (msg: Discord.Message) => {
               if (command.cmd === cmd) {
                 msg.reply(command.message);
               }
+              return;
             });
 
-            const musicPlugin = plugins.filter(
-              pluginC => pluginC.plugin && pluginC.plugin.name === "music"
+            const musicPlugin = plugins.find(
+              pluginC => pluginC.name === "music"
             );
 
-            if (musicPlugin) {
-              const action = musicPlugin.find(act => act.cmd === cmd) || {
-                name: "",
-              };
-              switch (action.name) {
-                case "play":
-                  client.music.bot.playFunction(msg, suffix); // PLAY command.
-                  break;
-                case "queue":
-                  client.music.bot.queueFunction(msg, suffix); // QUEUE command.
-                  break;
-                case "np":
-                  client.music.bot.npFunction(msg, suffix); // NOWPLAYING command.
-                  break;
-                case "loop":
-                  client.music.bot.loopFunction(msg, suffix); // LOOP command.
-                  break;
-                case "skip":
-                  client.music.bot.skipFunction(msg, suffix); // SKIP command.
-                  break;
-                case "pause":
-                  client.music.bot.pauseFunction(msg, suffix); // PAUSE command.
-                  break;
-                case "resume":
-                  client.music.bot.resumeFunction(msg, suffix); // RESUME command.
-                  break;
-                case "clear":
-                  client.music.bot.clearFunction(msg, suffix); // CLEARQUEUE command.
-                  break;
-                case "leave":
-                  client.music.bot.leaveFunction(msg, suffix); // LEAVE command.
-                  break;
-                case "search":
-                  client.music.bot.searchFunction(msg, suffix); // SEARCH command.
-                  break;
-                case "volume":
-                  client.music.bot.volumeFunction(msg, suffix); // VOLUME command.
-                  break;
-                case "remove":
-                  client.music.bot.removeFunction(msg, suffix); // REMOVE command.
-                  break;
-                default:
-                  msg.reply(
-                    `Sorry! Can't understand what you are trying to do..`
-                  );
+            const action = musicPlugin.commands.items.find(
+              command => command.cmd === cmd
+            );
+
+            if (action) {
+              client.music.bot.commands.set(action.name, {
+                ...client.music.bot.commands.get(action.name),
+                enabled: musicPlugin.enabled,
+              });
+            }
+
+            if (musicPlugin && musicPlugin.enabled) {
+              if (action) {
+                switch (action.name) {
+                  case "play":
+                    client.music.bot.playFunction(msg, suffix); // PLAY command.
+                    break;
+                  case "queue":
+                    client.music.bot.queueFunction(msg, suffix); // QUEUE command.
+                    break;
+                  case "np":
+                    client.music.bot.npFunction(msg, suffix); // NOWPLAYING command.
+                    break;
+                  case "loop":
+                    client.music.bot.loopFunction(msg, suffix); // LOOP command.
+                    break;
+                  case "skip":
+                    client.music.bot.skipFunction(msg, suffix); // SKIP command.
+                    break;
+                  case "pause":
+                    client.music.bot.pauseFunction(msg, suffix); // PAUSE command.
+                    break;
+                  case "resume":
+                    client.music.bot.resumeFunction(msg, suffix); // RESUME command.
+                    break;
+                  case "clear":
+                    client.music.bot.clearFunction(msg, suffix); // CLEARQUEUE command.
+                    break;
+                  case "leave":
+                    client.music.bot.leaveFunction(msg, suffix); // LEAVE command.
+                    break;
+                  case "search":
+                    client.music.bot.searchFunction(msg, suffix); // SEARCH command.
+                    break;
+                  case "volume":
+                    client.music.bot.volumeFunction(msg, suffix); // VOLUME command.
+                    break;
+                  case "remove":
+                    client.music.bot.removeFunction(msg, suffix); // REMOVE command.
+                    break;
+                  default:
+                    msg.reply(
+                      `Sorry! Can't understand what you are trying to do..`
+                    );
+                }
+                return;
               }
             } else {
-              msg.reply("Music bot is disabled");
+              msg.reply("Music feature is disabled.");
+              return;
             }
           }
+          return;
         }
       }
     }
+    return;
   } catch (err) {
     console.log(`Error on message for guild ${msg.guild.id}`, err);
     Sentry.captureException(err);
@@ -369,3 +264,104 @@ client.on("message", async (msg: Discord.Message) => {
 });
 
 client.login(process.env.DISCORD_BOT_TOKEN);
+
+function updateListener() {
+  Amplify.API.graphql(Amplify.graphqlOperation(onCreateCommand)).subscribe({
+    next: commandData => {
+      customCommands = [
+        ...customCommands,
+        commandData.value.data.onCreateCommand,
+      ];
+      console.log(
+        `New custom command added ${commandData.value.data.onCreateCommand.id}`
+      );
+    },
+  });
+  Amplify.API.graphql(Amplify.graphqlOperation(onUpdateCommand)).subscribe({
+    next: commandData => {
+      customCommands = [
+        ...customCommands,
+        commandData.value.data.onUpdateCommand,
+      ];
+      console.log(
+        `Custom command updated ${commandData.value.data.onUpdateCommand.id}`
+      );
+    },
+  });
+  Amplify.API.graphql(Amplify.graphqlOperation(onDeleteCommand)).subscribe({
+    next: commandData => {
+      customCommands = [
+        ...customCommands,
+        commandData.value.data.onDeleteCommand,
+      ];
+      console.log(
+        `Custom command deleted ${commandData.value.data.onDeleteCommand.id}`
+      );
+    },
+  });
+  // =======
+  // PLUGINS
+  // =======
+  Amplify.API.graphql(Amplify.graphqlOperation(onCreatePlugin)).subscribe({
+    next: pluginData => {
+      plugins = [...plugins, pluginData.value.data.onCreatePlugin];
+      console.log(
+        `New plugin added ${pluginData.value.data.onCreatePlugin.id}`
+      );
+    },
+  });
+  Amplify.API.graphql(Amplify.graphqlOperation(onUpdatePlugin)).subscribe({
+    next: pluginData => {
+      plugins = [...plugins, pluginData.value.data.onUpdatePlugin];
+      console.log(`Plugin updated ${pluginData.value.data.onUpdatePlugin.id}`);
+    },
+  });
+  Amplify.API.graphql(Amplify.graphqlOperation(onDeletePlugin)).subscribe({
+    next: pluginData => {
+      plugins = [...plugins, pluginData.value.data.onDeletePlugin];
+      console.log(`Plugin deleted ${pluginData.value.data.onDeletePlugin.id}`);
+    },
+  });
+  // =======
+  // PLUGINSCOMMAND
+  // =======
+  Amplify.API.graphql(
+    Amplify.graphqlOperation(onCreatePluginCommand)
+  ).subscribe({
+    next: pluginData => {
+      plugins = [
+        ...plugins,
+        pluginData.value.data.onCreatePluginCommand.plugin,
+      ];
+      console.log(
+        `New plugin command added ${pluginData.value.data.onCreatePluginCommand.id}`
+      );
+    },
+  });
+  Amplify.API.graphql(
+    Amplify.graphqlOperation(onUpdatePluginCommand)
+  ).subscribe({
+    next: pluginData => {
+      plugins = [
+        ...plugins,
+        pluginData.value.data.onUpdatePluginCommand.plugin,
+      ];
+      console.log(
+        `Plugin command updated ${pluginData.value.data.onUpdatePluginCommand.id}`
+      );
+    },
+  });
+  Amplify.API.graphql(
+    Amplify.graphqlOperation(onDeletePluginCommand)
+  ).subscribe({
+    next: pluginData => {
+      plugins = [
+        ...plugins,
+        pluginData.value.data.onDeletePluginCommand.plugin,
+      ];
+      console.log(
+        `Plugin command deleted ${pluginData.value.data.onDeletePluginCommand.id}`
+      );
+    },
+  });
+}

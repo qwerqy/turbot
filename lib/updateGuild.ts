@@ -12,17 +12,22 @@ async function updateGuild(guild) {
     Amplify.graphqlOperation(listPlugins)
   );
 
+  await checkPlugins(data, guild);
+}
+
+export default updateGuild;
+
+async function checkPlugins(data: any, guild: any) {
   if (!data.listPlugins.items.find(plugin => plugin.guildBot.id === guild.id)) {
     try {
       const newPlugin = {
         name: "music",
+        enabled: true,
         pluginGuildBotId: guild.id,
       };
-
       const { data: newPluginData } = await Amplify.API.graphql(
         Amplify.graphqlOperation(createPlugin, { input: newPlugin })
       );
-
       const newPluginCommandsList = [
         {
           name: "play",
@@ -80,7 +85,6 @@ async function updateGuild(guild) {
           cmd: "np",
         },
       ];
-
       const newPluginSettingsList = [
         {
           pluginSettingPluginId: newPluginData.createPlugin.id,
@@ -98,7 +102,6 @@ async function updateGuild(guild) {
           enabled: true,
         },
       ];
-
       await Promise.all([
         newPluginCommandsList.map(async newPluginCommand => {
           await Amplify.API.graphql(
@@ -115,7 +118,6 @@ async function updateGuild(guild) {
           );
         }),
       ]);
-
       console.log(`Guild ${guild.id} updated with new plugins`);
     } catch (err) {
       console.log(`Error adding to guild ${guild.id}`, err);
@@ -123,5 +125,3 @@ async function updateGuild(guild) {
     }
   }
 }
-
-export default updateGuild;

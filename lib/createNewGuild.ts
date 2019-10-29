@@ -25,6 +25,7 @@ async function createNewGuild(guild: Discord.Guild, globalPrefix: GPObject) {
 
     const newPlugin = {
       name: "music",
+      enabled: true,
       pluginGuildBotId: guild.id,
     };
 
